@@ -2,6 +2,7 @@ package com.whoami.domain.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class LocatedStudent {
 
@@ -58,5 +59,23 @@ public class LocatedStudent {
 
     public void markConflicting() {
         this.status = Status.CONFLICTING;
+    }
+
+    /**
+     * Check if this student has declared a neighbor in the given direction.
+     */
+    public boolean hasDeclaredNeighbor(Direction direction) {
+        return claims.stream()
+                .anyMatch(claim -> claim.getDirection() == direction);
+    }
+
+    /**
+     * Get the claimed neighbor in the given direction, if any.
+     */
+    public Optional<Student> getClaimedNeighbor(Direction direction) {
+        return claims.stream()
+                .filter(claim -> claim.getDirection() == direction)
+                .map(Claim::getTarget)
+                .findFirst();
     }
 }

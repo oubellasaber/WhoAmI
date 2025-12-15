@@ -24,8 +24,10 @@ public final class Position {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Position position)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Position position))
+            return false;
         return row == position.row && col == position.col;
     }
 
@@ -37,5 +39,18 @@ public final class Position {
     @Override
     public String toString() {
         return "(" + row + "," + col + ")";
+    }
+
+    /**
+     * Get the neighbor position in the given direction.
+     * Returns null if the direction would result in negative coordinates.
+     */
+    public Position getNeighbor(Direction direction) {
+        return switch (direction) {
+            case LEFT -> col > 0 ? new Position(row, col - 1) : null;
+            case RIGHT -> new Position(row, col + 1);
+            case FRONT -> row > 0 ? new Position(row - 1, col) : null;
+            case BACK -> new Position(row + 1, col);
+        };
     }
 }
