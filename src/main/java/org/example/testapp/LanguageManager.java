@@ -60,6 +60,8 @@ public class LanguageManager {
     english.put("test_data", "Load Test Data");
     english.put("validate", "Validate Neighbors");
     english.put("import_csv", "Import CSV");
+    english.put("setup_firestore", "Setup");
+    english.put("import_firestore", "Import Data");
     english.put("select_all", "Select All");
     english.put("deselect_all", "Deselect All");
     english.put("mark_present", "Mark Selected Present");
@@ -220,6 +222,8 @@ public class LanguageManager {
     french.put("test_data", "Charger données de test");
     french.put("validate", "Valider voisins");
     french.put("import_csv", "Importer CSV");
+    french.put("setup_firestore", "Configurer");
+    french.put("import_firestore", "Importer les données");
     french.put("select_all", "Sélectionner tout");
     french.put("deselect_all", "Désélectionner tout");
     french.put("mark_present", "Marquer sélectionnés présents");

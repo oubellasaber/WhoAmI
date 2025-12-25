@@ -215,7 +215,7 @@ public class LanguageManager {
     french.put("rows", "Lignes:");
     french.put("cols", "Colonnes:");
     french.put("create", "Créer");
-    french.put("analyze", "Analyser l'présence");
+    french.put("analyze", "Analyser la présence");
     french.put("test_data", "Charger données de test");
     french.put("validate", "Valider voisins");
     french.put("import_csv", "Importer CSV");

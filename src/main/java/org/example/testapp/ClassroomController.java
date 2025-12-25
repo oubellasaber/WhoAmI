@@ -117,7 +117,7 @@ public class ClassroomController {
 
       // Create or update the setup document
       firestore.collection("classroom_setup").document("current_session")
-              .set(setupData);
+          .set(setupData);
 
       // Clear the students collection to start fresh
       clearStudentsCollection();
@@ -130,8 +130,8 @@ public class ClassroomController {
       alert.setTitle("Classroom Setup Complete");
       alert.setHeaderText("Firestore is ready for student registration");
       alert.setContentText("Students can now register their positions and claims.\n" +
-              "When ready, click 'Import Firestore' to import all registered students.\n\n" +
-              "Classroom size: " + rowsCombo.getValue() + " rows × " + colsCombo.getValue() + " columns");
+          "When ready, click 'Import Data' to import all registered students.\n\n" +
+          "Classroom size: " + rowsCombo.getValue() + " rows × " + colsCombo.getValue() + " columns");
       alert.showAndWait();
 
       // Enable the import button now that setup is complete
@@ -215,23 +215,23 @@ public class ClassroomController {
 
     // Add test students with positions
     String[][] testStudents = {
-            { "Alice", "A" },
-            { "Bob", "B" },
-            { "Charlie", "C" },
-            { "Diana", "D" },
-            { "Eve", "E" },
-            { "Frank", "F" }, // Absent student - no position
-            { "Grace", "G" } // Uncertain student - conflicting claims
+        { "Alice", "A" },
+        { "Bob", "B" },
+        { "Charlie", "C" },
+        { "Diana", "D" },
+        { "Eve", "E" },
+        { "Frank", "F" }, // Absent student - no position
+        { "Grace", "G" } // Uncertain student - conflicting claims
     };
 
     int[][] positions = {
-            { 0, 0 }, // Alice at row 0, col 0
-            { 0, 1 }, // Bob at row 0, col 1
-            { 0, 2 }, // Charlie at row 0, col 2
-            { 1, 0 }, // Diana at row 1, col 0
-            { 1, 1 }, // Eve at row 1, col 1
-            { -1, -1 }, // Frank - no position (absent)
-            { 1, 2 } // Grace at row 1, col 2 - will have weak/conflicting claims
+        { 0, 0 }, // Alice at row 0, col 0
+        { 0, 1 }, // Bob at row 0, col 1
+        { 0, 2 }, // Charlie at row 0, col 2
+        { 1, 0 }, // Diana at row 1, col 0
+        { 1, 1 }, // Eve at row 1, col 1
+        { -1, -1 }, // Frank - no position (absent)
+        { 1, 2 } // Grace at row 1, col 2 - will have weak/conflicting claims
     };
 
     for (int i = 0; i < testStudents.length; i++) {
@@ -301,7 +301,7 @@ public class ClassroomController {
     updateClaimsList();
     updateClassroomVisualization();
     statusLabel.setText(
-            "✓ Test data loaded: 7 students - Alice/Bob/Charlie/Diana/Eve: PRESENT, Grace: UNCERTAIN (liar claiming absent Frank), Frank: ABSENT");
+        "✓ Test data loaded: 7 students - Alice/Bob/Charlie/Diana/Eve: PRESENT, Grace: UNCERTAIN (liar claiming absent Frank), Frank: ABSENT");
   }
 
   /**
@@ -313,7 +313,7 @@ public class ClassroomController {
   private void importFromFirestore() {
     if (!firestoreSetupComplete) {
       showAlert("Setup Required",
-              "Please click 'Setup Firestore' first to initialize the classroom.");
+          "Please click 'Setup Firestore' first to initialize the classroom.");
       return;
     }
 
@@ -328,7 +328,7 @@ public class ClassroomController {
 
         // Update the setup document to 'closed'
         firestore.collection("classroom_setup").document("current_session")
-                .set(closeData, com.google.cloud.firestore.SetOptions.merge());
+            .set(closeData, com.google.cloud.firestore.SetOptions.merge());
 
         System.out.println("Registration gate CLOSED in Firestore.");
       }
@@ -341,10 +341,14 @@ public class ClassroomController {
       manualOverrides.clear();
       undoRedoManager.clear();
 
-      if (claimsListView != null) claimsListView.getItems().clear();
-      if (studentsListView != null) studentsListView.getItems().clear();
-      if (claimerCombo != null) claimerCombo.getItems().clear();
-      if (targetCombo != null) targetCombo.getItems().clear();
+      if (claimsListView != null)
+        claimsListView.getItems().clear();
+      if (studentsListView != null)
+        studentsListView.getItems().clear();
+      if (claimerCombo != null)
+        claimerCombo.getItems().clear();
+      if (targetCombo != null)
+        targetCombo.getItems().clear();
 
       Firestore firestore = FirestoreService.getFirestore();
       CollectionReference studentsRef = firestore.collection("students");
@@ -391,12 +395,14 @@ public class ClassroomController {
 
           // Extract Claims (neighbor data)
           List<Map<String, Object>> claimsList = (List<Map<String, Object>>) doc.get("claims");
-          if (claimsList == null) claimsList = (List<Map<String, Object>>) doc.get("neighborClaims");
+          if (claimsList == null)
+            claimsList = (List<Map<String, Object>>) doc.get("neighborClaims");
 
           if (claimsList != null) {
             for (Map<String, Object> claimMap : claimsList) {
               String dirStr = (String) claimMap.get("direction");
-              if (dirStr == null) continue;
+              if (dirStr == null)
+                continue;
               Direction direction = Direction.valueOf(dirStr.toUpperCase());
 
               Object targetObj = claimMap.get("student");
@@ -406,10 +412,10 @@ public class ClassroomController {
                 claims.add(claim);
               } else {
                 // Simplified extraction for the claim target
-                String targetId = (targetObj instanceof Map) ?
-                        ((Map<String, String>) targetObj).get("studentId") : targetObj.toString();
-                String targetName = (targetObj instanceof Map) ?
-                        ((Map<String, String>) targetObj).get("name") : targetId;
+                String targetId = (targetObj instanceof Map) ? ((Map<String, String>) targetObj).get("studentId")
+                    : targetObj.toString();
+                String targetName = (targetObj instanceof Map) ? ((Map<String, String>) targetObj).get("name")
+                    : targetId;
 
                 Student targetStudent = new Student(targetId, targetName);
                 Claim claim = new Claim(direction, targetStudent);
@@ -423,9 +429,12 @@ public class ClassroomController {
           studentRegistry.put(studentId, located);
           studentsImported++;
 
-          if (studentsListView != null) studentsListView.getItems().add(name + " (ID: " + studentId + ")");
-          if (claimerCombo != null) claimerCombo.getItems().add(name);
-          if (targetCombo != null) targetCombo.getItems().add(name);
+          if (studentsListView != null)
+            studentsListView.getItems().add(name + " (ID: " + studentId + ")");
+          if (claimerCombo != null)
+            claimerCombo.getItems().add(name);
+          if (targetCombo != null)
+            targetCombo.getItems().add(name);
 
         } catch (Exception e) {
           System.err.println("Error processing doc: " + e.getMessage());
@@ -441,7 +450,8 @@ public class ClassroomController {
       attendanceService.setClassroom(classroom);
 
       for (LocatedStudent ls : importedStudents) {
-        if (ls.getPosition() != null) classroom.place(ls);
+        if (ls.getPosition() != null)
+          classroom.place(ls);
       }
 
       updateClassroomVisualization();
@@ -634,12 +644,12 @@ public class ClassroomController {
   private void addTestClaim(String claimer, String target, Direction direction) {
     // Find students by name in test data
     LocatedStudent claimerLocated = studentRegistry.values().stream()
-            .filter(ls -> ls.getStudent().getName().equals(claimer))
-            .findFirst().orElse(null);
+        .filter(ls -> ls.getStudent().getName().equals(claimer))
+        .findFirst().orElse(null);
 
     LocatedStudent targetLocated = studentRegistry.values().stream()
-            .filter(ls -> ls.getStudent().getName().equals(target))
-            .findFirst().orElse(null);
+        .filter(ls -> ls.getStudent().getName().equals(target))
+        .findFirst().orElse(null);
 
     if (claimerLocated != null && targetLocated != null) {
       Claim claim = new Claim(direction, targetLocated.getStudent());
@@ -654,8 +664,8 @@ public class ClassroomController {
   private void addAbsentClaim(String claimer, Direction direction) {
     // Find student by name in test data
     LocatedStudent claimerLocated = studentRegistry.values().stream()
-            .filter(ls -> ls.getStudent().getName().equals(claimer))
-            .findFirst().orElse(null);
+        .filter(ls -> ls.getStudent().getName().equals(claimer))
+        .findFirst().orElse(null);
 
     if (claimerLocated != null) {
       Claim claim = new Claim(direction, null); // null target = absent
@@ -757,14 +767,14 @@ public class ClassroomController {
     importCsvButton.setOnAction(e -> importFromCsv());
 
     // NEW: Setup Firestore Button (to initialize for student registration)
-    setupFirestoreButton = new Button("Setup Firestore");
+    setupFirestoreButton = new Button(LanguageManager.getInstance().get("setup_firestore"));
     setupFirestoreButton.setPrefWidth(140);
     setupFirestoreButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #4CAF50;");
     setupFirestoreButton.setTooltip(new Tooltip("Initialize Firestore for student registration"));
     setupFirestoreButton.setOnAction(e -> setupFirestoreForClass());
 
     // Import Firestore Button (disabled until setup is done)
-    importFirestoreButton = new Button("Import Firestore");
+    importFirestoreButton = new Button(LanguageManager.getInstance().get("import_firestore"));
     importFirestoreButton.setPrefWidth(140);
     importFirestoreButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #aaaaaa;");
     importFirestoreButton.setDisable(true);
@@ -790,20 +800,20 @@ public class ClassroomController {
 
     setupLabel = new Label(LanguageManager.getInstance().get("setup_classroom"));
     panel.getChildren().addAll(
-            setupLabel,
-            rowLabel, rowsCombo,
-            colLabel, colsCombo,
-            createButton,
-            new Separator(javafx.geometry.Orientation.VERTICAL),
-            analyzeButton,
-            testDataButton,
-            validateButton,
-            importCsvButton,
-            setupFirestoreButton,
-            importFirestoreButton,
-            new Separator(javafx.geometry.Orientation.VERTICAL),
-            selectAllButton, deselectAllButton,
-            batchPresentButton, batchAbsentButton);
+        setupLabel,
+        rowLabel, rowsCombo,
+        colLabel, colsCombo,
+        createButton,
+        new Separator(javafx.geometry.Orientation.VERTICAL),
+        analyzeButton,
+        testDataButton,
+        validateButton,
+        importCsvButton,
+        setupFirestoreButton,
+        importFirestoreButton,
+        new Separator(javafx.geometry.Orientation.VERTICAL),
+        selectAllButton, deselectAllButton,
+        batchPresentButton, batchAbsentButton);
 
     return panel;
   }
@@ -1001,12 +1011,12 @@ public class ClassroomController {
     addClaimBox.setStyle("-fx-font-size: 10;");
 
     panel.getChildren().addAll(
-            studentsLabel,
-            studentsListView,
-            addStudentBox,
-            claimsHeaderLabel,
-            claimsListView,
-            addClaimBox);
+        studentsLabel,
+        studentsListView,
+        addStudentBox,
+        claimsHeaderLabel,
+        claimsListView,
+        addClaimBox);
 
     VBox.setVgrow(studentsListView, Priority.ALWAYS);
     VBox.setVgrow(claimsListView, Priority.ALWAYS);
@@ -1033,9 +1043,9 @@ public class ClassroomController {
     if (importCsvButton != null)
       importCsvButton.setText(lm.get("import_csv"));
     if (setupFirestoreButton != null)
-      setupFirestoreButton.setText("Setup Firestore"); // Could be made translatable
+      setupFirestoreButton.setText(lm.get("setup_firestore"));
     if (importFirestoreButton != null)
-      importFirestoreButton.setText("Import Firestore"); // Could be made translatable
+      importFirestoreButton.setText(lm.get("import_firestore"));
     if (selectAllButton != null)
       selectAllButton.setText(lm.get("select_all"));
     if (deselectAllButton != null)
@@ -1063,7 +1073,7 @@ public class ClassroomController {
     if (addClaimButton != null)
       addClaimButton.setText(lm.get("add_claim"));
     if (statusLabel != null && (statusLabel.getText() == null || statusLabel.getText().isEmpty()
-            || statusLabel.getText().equals(LanguageManager.getInstance().get("status_ready")))) {
+        || statusLabel.getText().equals(LanguageManager.getInstance().get("status_ready")))) {
       statusLabel.setText(lm.get("status_ready"));
     }
   }
@@ -1122,12 +1132,12 @@ public class ClassroomController {
   private void addClaim(String claimer, String target, Direction direction) {
     // Find students by name in registry
     LocatedStudent claimerLocated = studentRegistry.values().stream()
-            .filter(ls -> ls.getStudent().getName().equals(claimer))
-            .findFirst().orElse(null);
+        .filter(ls -> ls.getStudent().getName().equals(claimer))
+        .findFirst().orElse(null);
 
     LocatedStudent targetLocated = studentRegistry.values().stream()
-            .filter(ls -> ls.getStudent().getName().equals(target))
-            .findFirst().orElse(null);
+        .filter(ls -> ls.getStudent().getName().equals(target))
+        .findFirst().orElse(null);
 
     if (claimerLocated != null && targetLocated != null) {
       Claim claim = new Claim(direction, targetLocated.getStudent());
@@ -1150,8 +1160,8 @@ public class ClassroomController {
       for (Claim claim : student.getClaims()) {
         String targetName = claim.isAbsentClaim() ? "[ABSENT/EMPTY]" : claim.getTarget().getName();
         claimsListView.getItems().add(
-                student.getStudent().getName() + " → " +
-                        targetName + " (" + claim.getDirection() + ")");
+            student.getStudent().getName() + " → " +
+                targetName + " (" + claim.getDirection() + ")");
       }
     }
   }
@@ -1183,16 +1193,16 @@ public class ClassroomController {
 
       // Show results summary
       int presentCount = (int) result.reports.stream()
-              .filter(r -> r.getStatus().equals(org.example.testapp.attendance.AttendanceReport.AttendanceStatus.PRESENT))
-              .count();
+          .filter(r -> r.getStatus().equals(org.example.testapp.attendance.AttendanceReport.AttendanceStatus.PRESENT))
+          .count();
       int absentCount = (int) result.reports.stream()
-              .filter(r -> r.getStatus().equals(org.example.testapp.attendance.AttendanceReport.AttendanceStatus.ABSENT))
-              .count();
+          .filter(r -> r.getStatus().equals(org.example.testapp.attendance.AttendanceReport.AttendanceStatus.ABSENT))
+          .count();
 
       // Record to history
       if (historyController != null) {
         String summary = String.format("Analyzed %d students (%d present, %d absent, %d conflicts)",
-                result.reports.size(), presentCount, absentCount, result.conflicts.size());
+            result.reports.size(), presentCount, absentCount, result.conflicts.size());
         historyController.recordAnalysis(summary);
       }
 
@@ -1200,13 +1210,13 @@ public class ClassroomController {
       alert.setTitle("Analysis Results");
       alert.setHeaderText(null);
       alert.setContentText(String.format(
-              "Analysis Results:\n\n" +
-                      "Total Students: %d\n" +
-                      "Present: %d\n" +
-                      "Absent: %d\n" +
-                      "Conflicts Detected: %d\n\n" +
-                      "See Results tab for details",
-              result.reports.size(), presentCount, absentCount, result.conflicts.size()));
+          "Analysis Results:\n\n" +
+              "Total Students: %d\n" +
+              "Present: %d\n" +
+              "Absent: %d\n" +
+              "Conflicts Detected: %d\n\n" +
+              "See Results tab for details",
+          result.reports.size(), presentCount, absentCount, result.conflicts.size()));
       alert.showAndWait();
 
     } catch (Exception e) {
@@ -1243,7 +1253,7 @@ public class ClassroomController {
       if (!classroom.hasAllNeighborsDeclared(student)) {
         invalidCount++;
         report.append("\n• ").append(student.getStudent().getName()).append(" at ")
-                .append(student.getPosition()).append(":");
+            .append(student.getPosition()).append(":");
 
         // Find which neighbors are missing
         var actualNeighbors = classroom.getNeighborsOf(student.getPosition());
@@ -1252,13 +1262,13 @@ public class ClassroomController {
           LocatedStudent neighbor = entry.getValue();
 
           boolean isDeclared = student.getClaims().stream()
-                  .anyMatch(claim -> claim.getDirection() == dir &&
-                          !claim.isAbsentClaim() &&
-                          claim.getTarget().equals(neighbor.getStudent()));
+              .anyMatch(claim -> claim.getDirection() == dir &&
+                  !claim.isAbsentClaim() &&
+                  claim.getTarget().equals(neighbor.getStudent()));
 
           if (!isDeclared) {
             report.append("\n  - Missing: ").append(neighbor.getStudent().getName())
-                    .append(" to the ").append(dir.toString().toLowerCase());
+                .append(" to the ").append(dir.toString().toLowerCase());
           }
         }
       }
