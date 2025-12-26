@@ -1174,7 +1174,7 @@ public class ClassroomController {
 
     try {
       // Validate that all students have declared all their neighbors
-      classroom.validateAllNeighborsDeclared();
+      //classroom.validateAllNeighborsDeclared();
 
       // Configure the service
       attendanceService.setClassroom(classroom);
