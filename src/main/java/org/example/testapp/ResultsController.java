@@ -52,6 +52,8 @@ public class ResultsController {
     VBox mainLayout = new VBox(15);
     mainLayout.setPadding(new Insets(20));
     mainLayout.setStyle("-fx-background-color: -fx-background;");
+    mainLayout.setMaxWidth(Double.MAX_VALUE);
+    mainLayout.setPrefWidth(Double.MAX_VALUE);
 
     // Title
     titleLabel = new Label(LanguageManager.getInstance().get("attendance_analysis_results"));
@@ -67,20 +69,28 @@ public class ResultsController {
     refreshButton = new Button(LanguageManager.getInstance().get("refresh_results"));
     refreshButton.getStyleClass().add("button-outline");
     refreshButton.setPrefWidth(150);
-    refreshButton.setOnAction(e -> loadLatestResults());
+    refreshButton.setOnAction(e -> {
+      AnimationUtils.spin(refreshButton).play();
+      loadLatestResults();
+    });
 
     // Summary statistics
     VBox summaryBox = createSummaryBox();
 
     mainLayout.getChildren().addAll(titleLabel, filterBox, refreshButton, resultsTable, summaryBox);
     VBox.setVgrow(resultsTable, javafx.scene.layout.Priority.ALWAYS);
+    VBox.setVgrow(summaryBox, javafx.scene.layout.Priority.SOMETIMES);
 
     // Load initial results if any
     loadLatestResults();
 
     // Listen for language changes to update all labels/buttons/headers live
     LanguageManager.getInstance().addLanguageChangeListener(lang -> updateLanguageTexts());
-    return new ScrollPane(mainLayout);
+    
+    ScrollPane scrollPane = new ScrollPane(mainLayout);
+    scrollPane.setFitToWidth(true);
+    scrollPane.setFitToHeight(true);
+    return scrollPane;
   }
 
   private HBox createFilterBox() {
@@ -88,6 +98,8 @@ public class ResultsController {
     filterBox.setPadding(new Insets(15));
     filterBox.getStyleClass().add("card");
     filterBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    filterBox.setMaxWidth(Double.MAX_VALUE);
+    filterBox.setPrefWidth(Double.MAX_VALUE);
 
     searchLabel = new Label(LanguageManager.getInstance().get("search_name"));
     searchLabel.getStyleClass().add("label-header");
@@ -130,6 +142,8 @@ public class ResultsController {
         })
         .toList();
 
+    // Fade animation for table update
+    AnimationUtils.fadeScaleIn(resultsTable, javafx.util.Duration.millis(300)).play();
     resultsTable.getItems().setAll(filteredResults);
   }
 
@@ -184,6 +198,8 @@ public class ResultsController {
     resultsTable = new TableView<>();
     resultsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     resultsTable.setPrefHeight(400);
+    resultsTable.setMaxWidth(Double.MAX_VALUE);
+    resultsTable.setPrefWidth(Double.MAX_VALUE);
 
     // Name column
     nameCol = new TableColumn<>(LanguageManager.getInstance().get("student_name_col"));
@@ -231,6 +247,8 @@ public class ResultsController {
     VBox summaryBox = new VBox(12);
     summaryBox.setPadding(new Insets(15));
     summaryBox.getStyleClass().add("card");
+    summaryBox.setMaxWidth(Double.MAX_VALUE);
+    summaryBox.setPrefWidth(Double.MAX_VALUE);
 
     summaryTitleLabel = new Label(LanguageManager.getInstance().get("summary_statistics"));
     summaryTitleLabel.getStyleClass().add("label-subtitle");
@@ -245,6 +263,8 @@ public class ResultsController {
     HBox exportBox = new HBox(10);
     exportBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
     exportBox.setPadding(new Insets(10, 0, 0, 0));
+    exportBox.setMaxWidth(Double.MAX_VALUE);
+    exportBox.setPrefWidth(Double.MAX_VALUE);
 
     exportJsonButton = new Button(LanguageManager.getInstance().get("export_json"));
     exportJsonButton.getStyleClass().add("button-success");

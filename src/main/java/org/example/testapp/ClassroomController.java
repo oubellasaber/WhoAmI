@@ -915,6 +915,8 @@ public class ClassroomController {
           cell.getStyleClass().remove("cell-verified");
           cell.getStyleClass().remove("cell-unverified");
           cell.getStyleClass().add("cell-selected");
+          // Animate selection
+          AnimationUtils.bounce(cell).play();
         } else {
           selectedStudents.remove(key);
           boolean allNeighborsDeclared = classroom.hasAllNeighborsDeclared(located);
@@ -927,6 +929,8 @@ public class ClassroomController {
             cell.getStyleClass().remove("cell-unverified");
             cell.getStyleClass().add("cell-verified");
           }
+          // Animate state change
+          AnimationUtils.scaleDown(cell, javafx.util.Duration.millis(200)).play();
         }
       });
 

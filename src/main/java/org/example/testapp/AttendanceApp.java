@@ -156,6 +156,9 @@ public class AttendanceApp extends Application {
 
     mainLayout.setCenter(contentTabs);
 
+    // Add tab switching animations
+    setupTabAnimations(contentTabs);
+
     // Add language status label at the bottom
     languageStatusLabel = new Label();
     languageStatusLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: 500; -fx-text-fill: #7F8C8D;");
@@ -615,6 +618,53 @@ public class AttendanceApp extends Application {
     LanguageManager.Language current = LanguageManager.getInstance().getCurrentLanguage();
     languageStatusLabel.setText("Language: " + current.getDisplayName());
     System.out.println("[DEBUG] Status label updated to: " + current.getDisplayName());
+  }
+
+  private void setupTabAnimations(TabPane tabPane) {
+    tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+      if (newTab != null && newTab.getContent() != null) {
+        // Fade in animation when tab is selected
+        AnimationUtils.fadeIn(newTab.getContent(), javafx.util.Duration.millis(300)).play();
+      }
+    });
+  }
+
+  /**
+   * Show an animated alert dialog.
+   */
+  public void showAnimatedAlert(Alert.AlertType type, String title, String header, String content) {
+    Alert alert = new Alert(type);
+    alert.setTitle(title);
+    alert.setHeaderText(header);
+    alert.setContentText(content);
+    
+    // Animate dialog appearance
+    alert.setOnShown(e -> {
+      if (alert.getDialogPane() != null) {
+        AnimationUtils.fadeScaleIn(alert.getDialogPane(), javafx.util.Duration.millis(300)).play();
+      }
+    });
+    
+    alert.showAndWait();
+  }
+
+  /**
+   * Show an animated confirmation dialog.
+   */
+  public boolean showAnimatedConfirmation(String title, String header, String content) {
+    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    alert.setTitle(title);
+    alert.setHeaderText(header);
+    alert.setContentText(content);
+    
+    // Animate dialog appearance
+    alert.setOnShown(e -> {
+      if (alert.getDialogPane() != null) {
+        AnimationUtils.fadeScaleIn(alert.getDialogPane(), javafx.util.Duration.millis(300)).play();
+      }
+    });
+    
+    return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
   }
 
   public static void main(String[] args) {
