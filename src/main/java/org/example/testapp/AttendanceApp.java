@@ -1,13 +1,20 @@
 package org.example.testapp;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.example.testapp.entities.Classroom;
@@ -149,9 +156,12 @@ public class AttendanceApp extends Application {
 
     mainLayout.setCenter(contentTabs);
 
+    // Add tab switching animations
+    setupTabAnimations(contentTabs);
+
     // Add language status label at the bottom
     languageStatusLabel = new Label();
-    languageStatusLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold; -fx-text-fill: #333333;");
+    languageStatusLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: 500; -fx-text-fill: #7F8C8D;");
     updateLanguageStatusLabel();
     LanguageManager.getInstance().addLanguageChangeListener(lang -> {
       System.out.println("[DEBUG] AttendanceApp listener triggered! Language changed to: " + lang);
@@ -160,13 +170,34 @@ public class AttendanceApp extends Application {
     });
 
     HBox bottomBar = new HBox(10);
-    bottomBar.setPadding(new Insets(8, 15, 8, 15));
-    bottomBar.setStyle("-fx-border-color: #d0d0d0; -fx-border-width: 1 0 0 0; -fx-background-color: #f9f9f9;");
-    bottomBar.getChildren().add(languageStatusLabel);
+    bottomBar.setPadding(new Insets(10, 15, 10, 15));
+    bottomBar.getStyleClass().add("status-bar");
+    bottomBar.setAlignment(Pos.CENTER_LEFT);
+    
+    // Add version label
+    Label versionLabel = new Label("v1.0");
+    versionLabel.getStyleClass().add("label-secondary");
+    versionLabel.setStyle("-fx-font-size: 11px;");
+    
+    // Spacer
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    
+    bottomBar.getChildren().addAll(languageStatusLabel, spacer, versionLabel);
     mainLayout.setBottom(bottomBar);
 
     // Create scene
     scene = new Scene(mainLayout);
+    
+    // Load and apply professional stylesheet
+    try {
+      String css = getClass().getResource("styles.css").toExternalForm();
+      scene.getStylesheets().add(css);
+      System.out.println("[UI] Professional stylesheet loaded successfully");
+    } catch (Exception e) {
+      System.err.println("[UI] Warning: Could not load stylesheet: " + e.getMessage());
+    }
+    
     primaryStage.setScene(scene);
     // Apply translations to tabs now that they're created
     applyTranslations();
@@ -177,49 +208,49 @@ public class AttendanceApp extends Application {
   private MenuBar createMenuBar() {
     MenuBar menuBar = new MenuBar();
 
-    fileMenu = new Menu("File");
-    newItem = new MenuItem("New Session");
+    fileMenu = new Menu("📁 File");
+    newItem = new MenuItem("✨ New Session");
     newItem.setOnAction(e -> classroomController.newSession());
 
-    saveItem = new MenuItem("Save Session");
+    saveItem = new MenuItem("💾 Save Session");
     saveItem.setOnAction(e -> saveSession());
 
-    loadItem = new MenuItem("Load Session");
+    loadItem = new MenuItem("📂 Load Session");
     loadItem.setOnAction(e -> loadSession());
 
-    exitItem = new MenuItem("Exit");
+    exitItem = new MenuItem("🚪 Exit");
     exitItem.setOnAction(e -> primaryStage.close());
 
     fileMenu.getItems().addAll(newItem, new SeparatorMenuItem(), saveItem, loadItem,
         new SeparatorMenuItem(), exitItem);
 
-    editMenu = new Menu("Edit");
-    undoItem = new MenuItem("Undo");
+    editMenu = new Menu("✏ Edit");
+    undoItem = new MenuItem("⟲ Undo");
     undoItem.setOnAction(e -> classroomController.undo());
 
-    redoItem = new MenuItem("Redo");
+    redoItem = new MenuItem("⟳ Redo");
     redoItem.setOnAction(e -> classroomController.redo());
 
     editMenu.getItems().addAll(undoItem, redoItem);
 
-    helpMenu = new Menu("Help");
-    aboutItem = new MenuItem("About");
+    helpMenu = new Menu("ℹ Help");
+    aboutItem = new MenuItem("ℹ About");
     aboutItem.setOnAction(e -> showAboutDialog());
     helpMenu.getItems().add(aboutItem);
 
-    viewMenu = new Menu("View");
-    darkToggle = new CheckMenuItem("Dark Mode");
+    viewMenu = new Menu("👁 View");
+    darkToggle = new CheckMenuItem("🌙 Dark Mode");
     darkToggle.setOnAction(e -> applyTheme(darkToggle.isSelected()));
 
-    redactionToggle = new CheckMenuItem("Anonymize Data in Exports");
+    redactionToggle = new CheckMenuItem("🔒 Anonymize Data in Exports");
     redactionToggle.setOnAction(e -> classroomController.setRedactionEnabled(redactionToggle.isSelected()));
 
     viewMenu.getItems().addAll(darkToggle, redactionToggle);
 
-    languageMenu = new Menu("Language");
+    languageMenu = new Menu("🌐 Language");
     LanguageManager langManager = LanguageManager.getInstance();
     for (LanguageManager.Language lang : langManager.getAvailableLanguages()) {
-      MenuItem langItem = new MenuItem(lang.getDisplayName());
+      MenuItem langItem = new MenuItem("🗣 " + lang.getDisplayName());
       langItem.setOnAction(e -> {
         System.out.println("[DEBUG] Language changed to: " + lang.getDisplayName());
         langManager.setLanguage(lang);
@@ -237,25 +268,25 @@ public class AttendanceApp extends Application {
 
   private void applyTranslations() {
     LanguageManager lm = LanguageManager.getInstance();
-    // Menus
-    fileMenu.setText(lm.get("file"));
-    editMenu.setText(lm.get("edit"));
-    viewMenu.setText(lm.get("view"));
-    helpMenu.setText(lm.get("help"));
-    languageMenu.setText(lm.get("language"));
-    // File items
-    newItem.setText(lm.get("new_session"));
-    saveItem.setText(lm.get("save_session"));
-    loadItem.setText(lm.get("load_session"));
-    exitItem.setText(lm.get("exit"));
-    // Edit items
-    undoItem.setText(lm.get("undo"));
-    redoItem.setText(lm.get("redo"));
-    // View items
-    darkToggle.setText(lm.get("dark_mode"));
-    redactionToggle.setText(lm.get("anonymize_exports"));
-    // Help item
-    aboutItem.setText(lm.get("about"));
+    // Menus with icons
+    fileMenu.setText("📁 " + lm.get("file"));
+    editMenu.setText("✏ " + lm.get("edit"));
+    viewMenu.setText("👁 " + lm.get("view"));
+    helpMenu.setText("ℹ " + lm.get("help"));
+    languageMenu.setText("🌐 " + lm.get("language"));
+    // File items with icons
+    newItem.setText("✨ " + lm.get("new_session"));
+    saveItem.setText("💾 " + lm.get("save_session"));
+    loadItem.setText("📂 " + lm.get("load_session"));
+    exitItem.setText("🚪 " + lm.get("exit"));
+    // Edit items with icons
+    undoItem.setText("⟲ " + lm.get("undo"));
+    redoItem.setText("⟳ " + lm.get("redo"));
+    // View items with icons
+    darkToggle.setText("🌙 " + lm.get("dark_mode"));
+    redactionToggle.setText("🔒 " + lm.get("anonymize_exports"));
+    // Help item with icon
+    aboutItem.setText("ℹ " + lm.get("about"));
     // Tabs
     if (classroomTab != null)
       classroomTab.setText(lm.get("classroom_layout"));
@@ -341,28 +372,90 @@ public class AttendanceApp extends Application {
   }
 
   private Node createAuditLogView() {
-    VBox mainLayout = new VBox(10);
-    mainLayout.setPadding(new Insets(15));
+    VBox mainLayout = new VBox(15);
+    mainLayout.setPadding(new Insets(20));
+    mainLayout.getStyleClass().add("card");
 
+    // Header with icon
+    HBox headerBox = new HBox(15);
+    headerBox.setAlignment(Pos.CENTER_LEFT);
+    
+    Circle iconCircle = new Circle(25);
+    iconCircle.setFill(Color.web("#E74C3C"));
+    Label iconLabel = new Label("📋");
+    iconLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white;");
+    iconLabel.setTranslateX(-25);
+    iconLabel.setTranslateY(-25);
+    
     auditTitleLabel = new Label(LanguageManager.getInstance().get("audit_log"));
-    auditTitleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+    auditTitleLabel.getStyleClass().add("label-header");
+    
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    
+    Label entryCountLabel = new Label("0 entries");
+    entryCountLabel.getStyleClass().add("label-secondary");
+    
+    headerBox.getChildren().addAll(iconCircle, iconLabel, auditTitleLabel, spacer, entryCountLabel);
 
-    TextArea auditTextArea = new TextArea();
-    auditTextArea.setEditable(false);
-    auditTextArea.setWrapText(true);
-    auditTextArea.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10;");
-    auditTextArea.setText(AuditLogger.readAuditLog());
+    // Audit Log Table
+    TableView<AuditLogEntry> auditTable = new TableView<>();
+    auditTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
+    TableColumn<AuditLogEntry, String> timestampCol = new TableColumn<>("Date & Time");
+    timestampCol.setCellValueFactory(cellData ->
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getTimestamp()));
+    timestampCol.setMinWidth(160);
+    timestampCol.setPrefWidth(180);
+
+    TableColumn<AuditLogEntry, String> actionCol = new TableColumn<>("Action");
+    actionCol.setCellValueFactory(cellData ->
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAction()));
+    actionCol.setMinWidth(150);
+
+    TableColumn<AuditLogEntry, String> detailsCol = new TableColumn<>("Details");
+    detailsCol.setCellValueFactory(cellData ->
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getDetails()));
+    detailsCol.setMinWidth(350);
+    
+    // Enable text wrapping in details column
+    detailsCol.setCellFactory(tc -> {
+      TableCell<AuditLogEntry, String> cell = new TableCell<>();
+      Label label = new Label();
+      label.setWrapText(true);
+      label.setMaxWidth(Double.MAX_VALUE);
+      cell.setGraphic(label);
+      cell.setPrefHeight(Control.USE_COMPUTED_SIZE);
+      label.textProperty().bind(cell.itemProperty());
+      return cell;
+    });
+
+    auditTable.getColumns().addAll(timestampCol, actionCol, detailsCol);
+    auditTable.setPlaceholder(new Label(LanguageManager.getInstance().get("no_data")));
+
+    // Load audit log data
+    ObservableList<AuditLogEntry> auditData = FXCollections.observableArrayList();
+    loadAuditLogData(auditData);
+    auditTable.setItems(auditData);
+    entryCountLabel.setText(auditData.size() + " entries");
+
+    VBox.setVgrow(auditTable, javafx.scene.layout.Priority.ALWAYS);
+
+    // Button Box
     HBox buttonBox = new HBox(10);
-    buttonBox.setPadding(new Insets(10));
+    buttonBox.setAlignment(Pos.CENTER_LEFT);
 
     auditRefreshButton = new Button(LanguageManager.getInstance().get("refresh"));
-    auditRefreshButton.setPrefWidth(100);
-    auditRefreshButton.setOnAction(e -> auditTextArea.setText(AuditLogger.readAuditLog()));
+    auditRefreshButton.getStyleClass().add("button-success");
+    auditRefreshButton.setOnAction(e -> {
+      auditData.clear();
+      loadAuditLogData(auditData);
+      auditTable.setItems(auditData);
+      entryCountLabel.setText(auditData.size() + " entries");
+    });
 
     auditClearButton = new Button(LanguageManager.getInstance().get("clear_log"));
-    auditClearButton.setPrefWidth(120);
-    auditClearButton.setStyle("-fx-text-fill: #e74c3c;");
+    auditClearButton.getStyleClass().add("button-danger");
     auditClearButton.setOnAction(e -> {
       Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
       confirm.setTitle(LanguageManager.getInstance().get("confirm"));
@@ -370,30 +463,124 @@ public class AttendanceApp extends Application {
       confirm.setContentText(LanguageManager.getInstance().get("clear_log_confirm"));
       if (confirm.showAndWait().get() == ButtonType.OK) {
         AuditLogger.clearAuditLog();
-        auditTextArea.setText(LanguageManager.getInstance().get("audit_log_cleared"));
+        auditData.clear();
+        auditTable.setItems(auditData);
+        entryCountLabel.setText("0 entries");
       }
     });
 
     buttonBox.getChildren().addAll(auditRefreshButton, auditClearButton);
 
-    mainLayout.getChildren().addAll(auditTitleLabel, auditTextArea, buttonBox);
-    return new ScrollPane(mainLayout);
+    mainLayout.getChildren().addAll(headerBox, auditTable, buttonBox);
+    
+    ScrollPane scrollPane = new ScrollPane(mainLayout);
+    scrollPane.setFitToWidth(true);
+    return scrollPane;
+  }
+
+  private void loadAuditLogData(ObservableList<AuditLogEntry> data) {
+    String logContent = AuditLogger.readAuditLog();
+    if (logContent == null || logContent.isEmpty() || logContent.contains("No audit log")) {
+      return;
+    }
+    
+    String[] lines = logContent.split("\n");
+    for (String line : lines) {
+      if (line.trim().isEmpty()) continue;
+      // Parse format: [yyyy-MM-dd HH:mm:ss] ACTION: details
+      if (line.startsWith("[") && line.contains("] ")) {
+        int closeIdx = line.indexOf("]");
+        String timestamp = line.substring(1, closeIdx);
+        
+        String rest = line.substring(closeIdx + 2); // Skip "] "
+        int colonIdx = rest.indexOf(":");
+        if (colonIdx > 0) {
+          String action = rest.substring(0, colonIdx);
+          String details = rest.substring(colonIdx + 1).trim();
+          data.add(new AuditLogEntry(timestamp, action, details));
+        }
+      }
+    }
+  }
+
+  // Helper class for audit log entries
+  public static class AuditLogEntry {
+    private final String timestamp;
+    private final String action;
+    private final String details;
+
+    public AuditLogEntry(String timestamp, String action, String details) {
+      this.timestamp = timestamp;
+      this.action = action;
+      this.details = details;
+    }
+
+    public String getTimestamp() {
+      return timestamp;
+    }
+
+    public String getAction() {
+      return action;
+    }
+
+    public String getDetails() {
+      return details;
+    }
   }
 
   private void showAboutDialog() {
     Alert alert = new Alert(Alert.AlertType.INFORMATION);
     alert.setTitle("About Smart Attendance System");
     alert.setHeaderText("Multi-Strategy Smart Attendance System v1.0");
-    alert.setContentText("A distributed attendance verification system using peer-confirmation networks.\n\n" +
-        "Features:\n" +
-        "• Neighbor-based verification\n" +
-        "• Seat occupancy analysis\n" +
-        "• Consensus scoring\n" +
-        "• Conflict detection\n\n" +
-        "Keyboard Shortcuts:\n" +
-        "Alt+A: Analyze Attendance\n" +
-        "Ctrl+S: Save Session\n" +
-        "Ctrl+L: Load Session");
+    
+    // Create rich content with better formatting
+    VBox content = new VBox(15);
+    content.setPadding(new Insets(10));
+    
+    Label descLabel = new Label("A distributed attendance verification system using peer-confirmation networks.");
+    descLabel.setWrapText(true);
+    descLabel.setStyle("-fx-font-size: 13px;");
+    
+    Label featuresHeader = new Label("Key Features:");
+    featuresHeader.getStyleClass().add("label-header");
+    
+    VBox features = new VBox(5);
+    features.setPadding(new Insets(0, 0, 0, 15));
+    String[] featureList = {
+      "✓ Neighbor-based verification with directional claims",
+      "✓ Intelligent seat occupancy analysis",
+      "✓ Peer consensus scoring algorithm",
+      "✓ Advanced conflict detection and resolution",
+      "✓ Multi-language support (EN, FR, AR)",
+      "✓ Export to PDF, Excel, CSV, JSON, and PNG"
+    };
+    for (String feature : featureList) {
+      Label l = new Label(feature);
+      l.setStyle("-fx-font-size: 12px;");
+      features.getChildren().add(l);
+    }
+    
+    Label shortcutsHeader = new Label("Keyboard Shortcuts:");
+    shortcutsHeader.getStyleClass().add("label-header");
+    
+    VBox shortcuts = new VBox(5);
+    shortcuts.setPadding(new Insets(0, 0, 0, 15));
+    String[] shortcutList = {
+      "Alt+A: Analyze Attendance",
+      "Ctrl+S: Save Session",
+      "Ctrl+L: Load Session",
+      "Ctrl+Z: Undo",
+      "Ctrl+Y: Redo"
+    };
+    for (String shortcut : shortcutList) {
+      Label l = new Label(shortcut);
+      l.setStyle("-fx-font-size: 12px; -fx-font-family: 'Courier New', monospace;");
+      shortcuts.getChildren().add(l);
+    }
+    
+    content.getChildren().addAll(descLabel, featuresHeader, features, shortcutsHeader, shortcuts);
+    alert.getDialogPane().setContent(content);
+    alert.getDialogPane().setPrefWidth(500);
     alert.showAndWait();
   }
 
@@ -419,10 +606,11 @@ public class AttendanceApp extends Application {
     }
 
     if (dark) {
-      scene.getRoot().setStyle(
-          "-fx-base: #1e1e1e; -fx-background: #1e1e1e; -fx-control-inner-background: #2a2a2a; -fx-text-fill: #f3f3f3;");
+      scene.getRoot().getStyleClass().add("dark-mode");
+      System.out.println("[UI] Dark mode enabled");
     } else {
-      scene.getRoot().setStyle("");
+      scene.getRoot().getStyleClass().remove("dark-mode");
+      System.out.println("[UI] Light mode enabled");
     }
   }
 
@@ -430,6 +618,53 @@ public class AttendanceApp extends Application {
     LanguageManager.Language current = LanguageManager.getInstance().getCurrentLanguage();
     languageStatusLabel.setText("Language: " + current.getDisplayName());
     System.out.println("[DEBUG] Status label updated to: " + current.getDisplayName());
+  }
+
+  private void setupTabAnimations(TabPane tabPane) {
+    tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+      if (newTab != null && newTab.getContent() != null) {
+        // Fade in animation when tab is selected
+        AnimationUtils.fadeIn(newTab.getContent(), javafx.util.Duration.millis(300)).play();
+      }
+    });
+  }
+
+  /**
+   * Show an animated alert dialog.
+   */
+  public void showAnimatedAlert(Alert.AlertType type, String title, String header, String content) {
+    Alert alert = new Alert(type);
+    alert.setTitle(title);
+    alert.setHeaderText(header);
+    alert.setContentText(content);
+    
+    // Animate dialog appearance
+    alert.setOnShown(e -> {
+      if (alert.getDialogPane() != null) {
+        AnimationUtils.fadeScaleIn(alert.getDialogPane(), javafx.util.Duration.millis(300)).play();
+      }
+    });
+    
+    alert.showAndWait();
+  }
+
+  /**
+   * Show an animated confirmation dialog.
+   */
+  public boolean showAnimatedConfirmation(String title, String header, String content) {
+    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    alert.setTitle(title);
+    alert.setHeaderText(header);
+    alert.setContentText(content);
+    
+    // Animate dialog appearance
+    alert.setOnShown(e -> {
+      if (alert.getDialogPane() != null) {
+        AnimationUtils.fadeScaleIn(alert.getDialogPane(), javafx.util.Duration.millis(300)).play();
+      }
+    });
+    
+    return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
   }
 
   public static void main(String[] args) {
