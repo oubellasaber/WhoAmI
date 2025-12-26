@@ -695,24 +695,25 @@ public class ClassroomController {
   }
 
   public Node getView() {
-    VBox mainLayout = new VBox(10);
-    mainLayout.setPadding(new Insets(15));
+    VBox mainLayout = new VBox(15);
+    mainLayout.setPadding(new Insets(20));
+    mainLayout.setStyle("-fx-background-color: -fx-background;");
 
     // Control panel
     HBox controlPanel = createControlPanel();
     mainLayout.getChildren().add(controlPanel);
 
     // Classroom grid and claims
-    HBox contentArea = new HBox(15);
+    HBox contentArea = new HBox(20);
     contentArea.setPrefHeight(700);
 
     // Classroom grid
     VBox classroomPanel = createClassroomPanel();
-    classroomPanel.setPrefWidth(500);
+    classroomPanel.setPrefWidth(550);
 
     // Claims and info panel
     VBox infoPanel = createInfoPanel();
-    infoPanel.setPrefWidth(400);
+    infoPanel.setPrefWidth(450);
 
     contentArea.getChildren().addAll(classroomPanel, infoPanel);
     HBox.setHgrow(classroomPanel, Priority.ALWAYS);
@@ -722,7 +723,8 @@ public class ClassroomController {
 
     // Status bar
     statusLabel = new Label(LanguageManager.getInstance().get("status_ready"));
-    statusLabel.setStyle("-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-width: 1 0 0 0;");
+    statusLabel.getStyleClass().add("status-bar");
+    statusLabel.setStyle("-fx-padding: 12px;");
     mainLayout.getChildren().add(statusLabel);
 
     ScrollPane sp = new ScrollPane(mainLayout);
@@ -734,71 +736,89 @@ public class ClassroomController {
   }
 
   private HBox createControlPanel() {
-    HBox panel = new HBox(15);
-    panel.setPadding(new Insets(10));
-    panel.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;");
+    HBox panel = new HBox(12);
+    panel.setPadding(new Insets(15));
+    panel.getStyleClass().add("card");
+    panel.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    
     rowLabel = new Label(LanguageManager.getInstance().get("rows"));
+    rowLabel.getStyleClass().add("label-header");
+    
     rowsCombo = new ComboBox<>();
     rowsCombo.getItems().addAll(2, 3, 4, 5);
     rowsCombo.setValue(3);
+    rowsCombo.setPrefWidth(70);
+    
     colLabel = new Label(LanguageManager.getInstance().get("cols"));
+    colLabel.getStyleClass().add("label-header");
+    
     colsCombo = new ComboBox<>();
     colsCombo.getItems().addAll(2, 3, 4, 5);
     colsCombo.setValue(4);
+    colsCombo.setPrefWidth(70);
+    
     createButton = new Button(LanguageManager.getInstance().get("create"));
-    createButton.setPrefWidth(150);
-    createButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    createButton.setPrefWidth(120);
     createButton.setOnAction(e -> createClassroom());
+    
     analyzeButton = new Button(LanguageManager.getInstance().get("analyze"));
-    analyzeButton.setPrefWidth(150);
-    analyzeButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    analyzeButton.setPrefWidth(120);
+    analyzeButton.getStyleClass().add("button-warning");
     analyzeButton.setOnAction(e -> analyzeAttendance());
+    
     testDataButton = new Button(LanguageManager.getInstance().get("test_data"));
-    testDataButton.setPrefWidth(150);
-    testDataButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #0066cc;");
+    testDataButton.setPrefWidth(120);
+    testDataButton.getStyleClass().add("button-outline");
     testDataButton.setOnAction(e -> loadTestData());
+    
     validateButton = new Button(LanguageManager.getInstance().get("validate"));
-    validateButton.setPrefWidth(150);
-    validateButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #ff6600;");
+    validateButton.setPrefWidth(120);
+    validateButton.getStyleClass().add("button-outline");
     validateButton.setOnAction(e -> validateNeighbors());
+    
     importCsvButton = new Button(LanguageManager.getInstance().get("import_csv"));
-    importCsvButton.setPrefWidth(130);
-    importCsvButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #007700;");
+    importCsvButton.setPrefWidth(120);
+    importCsvButton.getStyleClass().add("button-success");
     importCsvButton.setOnAction(e -> importFromCsv());
 
     // NEW: Setup Firestore Button (to initialize for student registration)
     setupFirestoreButton = new Button(LanguageManager.getInstance().get("setup_firestore"));
-    setupFirestoreButton.setPrefWidth(140);
-    setupFirestoreButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #4CAF50;");
+    setupFirestoreButton.setPrefWidth(120);
+    setupFirestoreButton.getStyleClass().add("button-success");
     setupFirestoreButton.setTooltip(new Tooltip("Initialize Firestore for student registration"));
     setupFirestoreButton.setOnAction(e -> setupFirestoreForClass());
 
     // Import Firestore Button (disabled until setup is done)
     importFirestoreButton = new Button(LanguageManager.getInstance().get("import_firestore"));
-    importFirestoreButton.setPrefWidth(140);
-    importFirestoreButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #aaaaaa;");
+    importFirestoreButton.setPrefWidth(120);
+    importFirestoreButton.getStyleClass().add("button-success");
     importFirestoreButton.setDisable(true);
     importFirestoreButton.setTooltip(new Tooltip("Import registered students (requires setup first)"));
     importFirestoreButton.setOnAction(e -> importFromFirestore());
 
     selectAllButton = new Button(LanguageManager.getInstance().get("select_all"));
     selectAllButton.setPrefWidth(100);
-    selectAllButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    selectAllButton.getStyleClass().add("button-secondary");
     selectAllButton.setOnAction(e -> selectAllStudents());
+    
     deselectAllButton = new Button(LanguageManager.getInstance().get("deselect_all"));
     deselectAllButton.setPrefWidth(110);
-    deselectAllButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    deselectAllButton.getStyleClass().add("button-secondary");
     deselectAllButton.setOnAction(e -> deselectAllStudents());
+    
     batchPresentButton = new Button(LanguageManager.getInstance().get("mark_present"));
-    batchPresentButton.setPrefWidth(150);
-    batchPresentButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #2ecc71;");
+    batchPresentButton.setPrefWidth(120);
+    batchPresentButton.getStyleClass().add("button-success");
     batchPresentButton.setOnAction(e -> batchMarkPresent());
+    
     batchAbsentButton = new Button(LanguageManager.getInstance().get("mark_absent"));
-    batchAbsentButton.setPrefWidth(150);
-    batchAbsentButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #e74c3c;");
+    batchAbsentButton.setPrefWidth(120);
+    batchAbsentButton.getStyleClass().add("button-danger");
     batchAbsentButton.setOnAction(e -> batchMarkAbsent());
 
     setupLabel = new Label(LanguageManager.getInstance().get("setup_classroom"));
+    setupLabel.getStyleClass().add("label-header");
+    setupLabel.setStyle("-fx-font-weight: bold; -fx-padding: 0 10 0 0;");
     panel.getChildren().addAll(
         setupLabel,
         rowLabel, rowsCombo,
@@ -819,12 +839,12 @@ public class ClassroomController {
   }
 
   private VBox createClassroomPanel() {
-    VBox panel = new VBox(10);
-    panel.setPadding(new Insets(10));
-    panel.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1;");
+    VBox panel = new VBox(12);
+    panel.setPadding(new Insets(15));
+    panel.getStyleClass().add("card");
 
     classroomTitleLabel = new Label(LanguageManager.getInstance().get("classroom_layout"));
-    classroomTitleLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+    classroomTitleLabel.getStyleClass().add("label-subtitle");
 
     ScrollPane gridScroll = new ScrollPane();
     classroomGrid = new GridPane();
@@ -955,23 +975,28 @@ public class ClassroomController {
   }
 
   private VBox createInfoPanel() {
-    VBox panel = new VBox(10);
-    panel.setPadding(new Insets(10));
-    panel.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1;");
+    VBox panel = new VBox(15);
+    panel.setPadding(new Insets(15));
+    panel.getStyleClass().add("card");
 
     // Students section
     studentsLabel = new Label(LanguageManager.getInstance().get("students"));
-    studentsLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+    studentsLabel.getStyleClass().add("label-subtitle");
 
     studentsListView = new ListView<>();
     studentsListView.setPrefHeight(150);
-    studentsListView.setStyle("-fx-control-inner-background: #ffffff;");
 
-    // Add student button
-    HBox addStudentBox = new HBox(5);
+    // Add student box with better styling
+    HBox addStudentBox = new HBox(8);
+    addStudentBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    
     studentNameField = new TextField();
     studentNameField.setPromptText(LanguageManager.getInstance().get("student_name"));
+    studentNameField.setPrefWidth(200);
+    HBox.setHgrow(studentNameField, Priority.ALWAYS);
+    
     addStudentButton = new Button(LanguageManager.getInstance().get("add_student"));
+    addStudentButton.getStyleClass().add("button-success");
     addStudentButton.setOnAction(e -> {
       String name = studentNameField.getText().trim();
       if (!name.isEmpty()) {
@@ -983,23 +1008,34 @@ public class ClassroomController {
 
     // Claims section
     claimsHeaderLabel = new Label(LanguageManager.getInstance().get("claims"));
-    claimsHeaderLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+    claimsHeaderLabel.getStyleClass().add("label-subtitle");
 
     claimsListView = new ListView<>();
     claimsListView.setPrefHeight(200);
-    claimsListView.setStyle("-fx-control-inner-background: #ffffff;");
 
-    // Add claim button
-    HBox addClaimBox = new HBox(5);
+    // Add claim box with better styling
+    VBox addClaimBox = new VBox(8);
+    
+    HBox combo1 = new HBox(8);
     claimerCombo = new ComboBox<>();
+    claimerCombo.setPromptText(LanguageManager.getInstance().get("claimer"));
+    claimerCombo.setPrefWidth(150);
+    
     targetCombo = new ComboBox<>();
+    targetCombo.setPromptText(LanguageManager.getInstance().get("target"));
+    targetCombo.setPrefWidth(150);
+    
+    combo1.getChildren().addAll(claimerCombo, targetCombo);
+    
+    HBox combo2 = new HBox(8);
     directionCombo = new ComboBox<>();
     directionCombo.getItems().addAll(Direction.values());
-    claimerCombo.setPromptText(LanguageManager.getInstance().get("claimer"));
-    targetCombo.setPromptText(LanguageManager.getInstance().get("target"));
     directionCombo.setPromptText(LanguageManager.getInstance().get("direction"));
+    directionCombo.setPrefWidth(150);
 
     addClaimButton = new Button(LanguageManager.getInstance().get("add_claim"));
+    addClaimButton.getStyleClass().add("button-success");
+    addClaimButton.setPrefWidth(150);
     addClaimButton.setOnAction(e -> {
       if (claimerCombo.getValue() != null && targetCombo.getValue() != null && directionCombo.getValue() != null) {
         addClaim(claimerCombo.getValue(), targetCombo.getValue(), directionCombo.getValue());
@@ -1007,13 +1043,14 @@ public class ClassroomController {
       }
     });
 
-    addClaimBox.getChildren().addAll(claimerCombo, targetCombo, directionCombo, addClaimButton);
-    addClaimBox.setStyle("-fx-font-size: 10;");
+    combo2.getChildren().addAll(directionCombo, addClaimButton);
+    addClaimBox.getChildren().addAll(combo1, combo2);
 
     panel.getChildren().addAll(
         studentsLabel,
         studentsListView,
         addStudentBox,
+        new Separator(),
         claimsHeaderLabel,
         claimsListView,
         addClaimBox);

@@ -49,12 +49,13 @@ public class ResultsController {
   }
 
   public Node getView() {
-    VBox mainLayout = new VBox(10);
-    mainLayout.setPadding(new Insets(15));
+    VBox mainLayout = new VBox(15);
+    mainLayout.setPadding(new Insets(20));
+    mainLayout.setStyle("-fx-background-color: -fx-background;");
 
     // Title
     titleLabel = new Label(LanguageManager.getInstance().get("attendance_analysis_results"));
-    titleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+    titleLabel.getStyleClass().add("label-title");
 
     // Filter controls
     HBox filterBox = createFilterBox();
@@ -64,6 +65,8 @@ public class ResultsController {
 
     // Refresh button
     refreshButton = new Button(LanguageManager.getInstance().get("refresh_results"));
+    refreshButton.getStyleClass().add("button-outline");
+    refreshButton.setPrefWidth(150);
     refreshButton.setOnAction(e -> loadLatestResults());
 
     // Summary statistics
@@ -82,23 +85,29 @@ public class ResultsController {
 
   private HBox createFilterBox() {
     HBox filterBox = new HBox(15);
-    filterBox.setPadding(new Insets(10));
-    filterBox.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5;");
+    filterBox.setPadding(new Insets(15));
+    filterBox.getStyleClass().add("card");
+    filterBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
     searchLabel = new Label(LanguageManager.getInstance().get("search_name"));
+    searchLabel.getStyleClass().add("label-header");
+    
     searchField = new TextField();
     searchField.setPromptText(LanguageManager.getInstance().get("enter_student_name"));
-    searchField.setPrefWidth(200);
+    searchField.setPrefWidth(220);
     searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
 
     filterStatusLabel = new Label(LanguageManager.getInstance().get("filter_status"));
+    filterStatusLabel.getStyleClass().add("label-header");
+    
     statusFilter = new ComboBox<>();
     statusFilter.getItems().addAll(LanguageManager.getInstance().get("all"), "PRESENT", "ABSENT", "UNCERTAIN");
     statusFilter.setValue(LanguageManager.getInstance().get("all"));
-    statusFilter.setPrefWidth(120);
+    statusFilter.setPrefWidth(140);
     statusFilter.setOnAction(e -> applyFilters());
 
     clearButton = new Button(LanguageManager.getInstance().get("clear_filters"));
+    clearButton.getStyleClass().add("button-secondary");
     clearButton.setOnAction(e -> {
       searchField.clear();
       statusFilter.setValue(LanguageManager.getInstance().get("all"));
@@ -219,44 +228,53 @@ public class ResultsController {
   }
 
   private VBox createSummaryBox() {
-    VBox summaryBox = new VBox(10);
+    VBox summaryBox = new VBox(12);
     summaryBox.setPadding(new Insets(15));
-    summaryBox.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5;");
+    summaryBox.getStyleClass().add("card");
 
     summaryTitleLabel = new Label(LanguageManager.getInstance().get("summary_statistics"));
-    summaryTitleLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+    summaryTitleLabel.getStyleClass().add("label-subtitle");
 
     summaryLabel = new Label(LanguageManager.getInstance().get("no_results_yet"));
-    summaryLabel.setStyle("-fx-font-size: 11;");
+    summaryLabel.getStyleClass().add("label-secondary");
     summaryLabel.setWrapText(true);
 
+    Label exportLabel = new Label("Export Options:");
+    exportLabel.getStyleClass().add("label-header");
+    
     HBox exportBox = new HBox(10);
-    exportBox.setStyle("-fx-alignment: center-left;");
+    exportBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    exportBox.setPadding(new Insets(10, 0, 0, 0));
 
     exportJsonButton = new Button(LanguageManager.getInstance().get("export_json"));
-    exportJsonButton.setPrefWidth(120);
+    exportJsonButton.getStyleClass().add("button-success");
+    exportJsonButton.setPrefWidth(110);
     exportJsonButton.setOnAction(e -> exportResults("json"));
 
     exportCsvButton = new Button(LanguageManager.getInstance().get("export_csv"));
-    exportCsvButton.setPrefWidth(120);
+    exportCsvButton.getStyleClass().add("button-success");
+    exportCsvButton.setPrefWidth(110);
     exportCsvButton.setOnAction(e -> exportResults("csv"));
 
     exportPdfButton = new Button(LanguageManager.getInstance().get("export_pdf"));
-    exportPdfButton.setPrefWidth(120);
+    exportPdfButton.getStyleClass().add("button-success");
+    exportPdfButton.setPrefWidth(110);
     exportPdfButton.setOnAction(e -> exportResults("pdf"));
 
     exportExcelButton = new Button(LanguageManager.getInstance().get("export_excel"));
-    exportExcelButton.setPrefWidth(130);
+    exportExcelButton.getStyleClass().add("button-success");
+    exportExcelButton.setPrefWidth(110);
     exportExcelButton.setOnAction(e -> exportResults("xlsx"));
 
     exportImageButton = new Button(LanguageManager.getInstance().get("export_image"));
-    exportImageButton.setPrefWidth(130);
+    exportImageButton.getStyleClass().add("button-success");
+    exportImageButton.setPrefWidth(110);
     exportImageButton.setOnAction(e -> exportResults("png"));
 
     exportBox.getChildren().addAll(exportJsonButton, exportCsvButton, exportPdfButton, exportExcelButton,
         exportImageButton);
 
-    summaryBox.getChildren().addAll(summaryTitleLabel, summaryLabel, new Separator(), exportBox);
+    summaryBox.getChildren().addAll(summaryTitleLabel, summaryLabel, new Separator(), exportLabel, exportBox);
 
     return summaryBox;
   }

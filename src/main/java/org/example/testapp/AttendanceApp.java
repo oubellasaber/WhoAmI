@@ -2,11 +2,14 @@ package org.example.testapp;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -151,7 +154,7 @@ public class AttendanceApp extends Application {
 
     // Add language status label at the bottom
     languageStatusLabel = new Label();
-    languageStatusLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold; -fx-text-fill: #333333;");
+    languageStatusLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: 500; -fx-text-fill: #7F8C8D;");
     updateLanguageStatusLabel();
     LanguageManager.getInstance().addLanguageChangeListener(lang -> {
       System.out.println("[DEBUG] AttendanceApp listener triggered! Language changed to: " + lang);
@@ -160,13 +163,34 @@ public class AttendanceApp extends Application {
     });
 
     HBox bottomBar = new HBox(10);
-    bottomBar.setPadding(new Insets(8, 15, 8, 15));
-    bottomBar.setStyle("-fx-border-color: #d0d0d0; -fx-border-width: 1 0 0 0; -fx-background-color: #f9f9f9;");
-    bottomBar.getChildren().add(languageStatusLabel);
+    bottomBar.setPadding(new Insets(10, 15, 10, 15));
+    bottomBar.getStyleClass().add("status-bar");
+    bottomBar.setAlignment(Pos.CENTER_LEFT);
+    
+    // Add version label
+    Label versionLabel = new Label("v1.0");
+    versionLabel.getStyleClass().add("label-secondary");
+    versionLabel.setStyle("-fx-font-size: 11px;");
+    
+    // Spacer
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    
+    bottomBar.getChildren().addAll(languageStatusLabel, spacer, versionLabel);
     mainLayout.setBottom(bottomBar);
 
     // Create scene
     scene = new Scene(mainLayout);
+    
+    // Load and apply professional stylesheet
+    try {
+      String css = getClass().getResource("styles.css").toExternalForm();
+      scene.getStylesheets().add(css);
+      System.out.println("[UI] Professional stylesheet loaded successfully");
+    } catch (Exception e) {
+      System.err.println("[UI] Warning: Could not load stylesheet: " + e.getMessage());
+    }
+    
     primaryStage.setScene(scene);
     // Apply translations to tabs now that they're created
     applyTranslations();
@@ -345,24 +369,27 @@ public class AttendanceApp extends Application {
     mainLayout.setPadding(new Insets(15));
 
     auditTitleLabel = new Label(LanguageManager.getInstance().get("audit_log"));
-    auditTitleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+    auditTitleLabel.getStyleClass().add("label-title");
 
     TextArea auditTextArea = new TextArea();
     auditTextArea.setEditable(false);
     auditTextArea.setWrapText(true);
-    auditTextArea.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10;");
+    auditTextArea.setStyle("-fx-font-family: 'Courier New', 'Consolas', monospace; -fx-font-size: 11px;");
     auditTextArea.setText(AuditLogger.readAuditLog());
+    VBox.setVgrow(auditTextArea, Priority.ALWAYS);
 
     HBox buttonBox = new HBox(10);
-    buttonBox.setPadding(new Insets(10));
+    buttonBox.setPadding(new Insets(10, 0, 0, 0));
+    buttonBox.setAlignment(Pos.CENTER_LEFT);
 
     auditRefreshButton = new Button(LanguageManager.getInstance().get("refresh"));
-    auditRefreshButton.setPrefWidth(100);
+    auditRefreshButton.setPrefWidth(120);
+    auditRefreshButton.getStyleClass().add("button-outline");
     auditRefreshButton.setOnAction(e -> auditTextArea.setText(AuditLogger.readAuditLog()));
 
     auditClearButton = new Button(LanguageManager.getInstance().get("clear_log"));
     auditClearButton.setPrefWidth(120);
-    auditClearButton.setStyle("-fx-text-fill: #e74c3c;");
+    auditClearButton.getStyleClass().add("button-danger");
     auditClearButton.setOnAction(e -> {
       Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
       confirm.setTitle(LanguageManager.getInstance().get("confirm"));
@@ -384,16 +411,55 @@ public class AttendanceApp extends Application {
     Alert alert = new Alert(Alert.AlertType.INFORMATION);
     alert.setTitle("About Smart Attendance System");
     alert.setHeaderText("Multi-Strategy Smart Attendance System v1.0");
-    alert.setContentText("A distributed attendance verification system using peer-confirmation networks.\n\n" +
-        "Features:\n" +
-        "• Neighbor-based verification\n" +
-        "• Seat occupancy analysis\n" +
-        "• Consensus scoring\n" +
-        "• Conflict detection\n\n" +
-        "Keyboard Shortcuts:\n" +
-        "Alt+A: Analyze Attendance\n" +
-        "Ctrl+S: Save Session\n" +
-        "Ctrl+L: Load Session");
+    
+    // Create rich content with better formatting
+    VBox content = new VBox(15);
+    content.setPadding(new Insets(10));
+    
+    Label descLabel = new Label("A distributed attendance verification system using peer-confirmation networks.");
+    descLabel.setWrapText(true);
+    descLabel.setStyle("-fx-font-size: 13px;");
+    
+    Label featuresHeader = new Label("Key Features:");
+    featuresHeader.getStyleClass().add("label-header");
+    
+    VBox features = new VBox(5);
+    features.setPadding(new Insets(0, 0, 0, 15));
+    String[] featureList = {
+      "✓ Neighbor-based verification with directional claims",
+      "✓ Intelligent seat occupancy analysis",
+      "✓ Peer consensus scoring algorithm",
+      "✓ Advanced conflict detection and resolution",
+      "✓ Multi-language support (EN, FR, AR)",
+      "✓ Export to PDF, Excel, CSV, JSON, and PNG"
+    };
+    for (String feature : featureList) {
+      Label l = new Label(feature);
+      l.setStyle("-fx-font-size: 12px;");
+      features.getChildren().add(l);
+    }
+    
+    Label shortcutsHeader = new Label("Keyboard Shortcuts:");
+    shortcutsHeader.getStyleClass().add("label-header");
+    
+    VBox shortcuts = new VBox(5);
+    shortcuts.setPadding(new Insets(0, 0, 0, 15));
+    String[] shortcutList = {
+      "Alt+A: Analyze Attendance",
+      "Ctrl+S: Save Session",
+      "Ctrl+L: Load Session",
+      "Ctrl+Z: Undo",
+      "Ctrl+Y: Redo"
+    };
+    for (String shortcut : shortcutList) {
+      Label l = new Label(shortcut);
+      l.setStyle("-fx-font-size: 12px; -fx-font-family: 'Courier New', monospace;");
+      shortcuts.getChildren().add(l);
+    }
+    
+    content.getChildren().addAll(descLabel, featuresHeader, features, shortcutsHeader, shortcuts);
+    alert.getDialogPane().setContent(content);
+    alert.getDialogPane().setPrefWidth(500);
     alert.showAndWait();
   }
 
@@ -419,10 +485,11 @@ public class AttendanceApp extends Application {
     }
 
     if (dark) {
-      scene.getRoot().setStyle(
-          "-fx-base: #1e1e1e; -fx-background: #1e1e1e; -fx-control-inner-background: #2a2a2a; -fx-text-fill: #f3f3f3;");
+      scene.getRoot().getStyleClass().add("dark-mode");
+      System.out.println("[UI] Dark mode enabled");
     } else {
-      scene.getRoot().setStyle("");
+      scene.getRoot().getStyleClass().remove("dark-mode");
+      System.out.println("[UI] Light mode enabled");
     }
   }
 
