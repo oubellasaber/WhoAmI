@@ -848,14 +848,15 @@ public class ClassroomController {
 
     ScrollPane gridScroll = new ScrollPane();
     classroomGrid = new GridPane();
-    classroomGrid.setHgap(5);
-    classroomGrid.setVgap(5);
-    classroomGrid.setPadding(new Insets(10));
-    classroomGrid.setStyle("-fx-border-color: #f0f0f0;");
+    classroomGrid.setHgap(8);
+    classroomGrid.setVgap(8);
+    classroomGrid.setPadding(new Insets(15));
+    classroomGrid.getStyleClass().add("classroom-grid");
 
     gridScroll.setContent(classroomGrid);
     gridScroll.setFitToWidth(true);
     gridScroll.setFitToHeight(true);
+    gridScroll.getStyleClass().add("classroom-scroll");
 
     panel.getChildren().addAll(classroomTitleLabel, gridScroll);
 
@@ -887,12 +888,12 @@ public class ClassroomController {
    * Create a single classroom cell with optional student.
    */
   private VBox createClassroomCell(int row, int col) {
-    VBox cell = new VBox();
-    cell.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1; -fx-background-color: #f9f9f9;");
-    cell.setPrefWidth(80);
-    cell.setPrefHeight(80);
+    VBox cell = new VBox(6);
+    cell.getStyleClass().add("classroom-cell");
+    cell.setPrefWidth(100);
+    cell.setPrefHeight(100);
     cell.setAlignment(Pos.CENTER);
-    cell.setPadding(new Insets(5));
+    cell.setPadding(new Insets(8));
 
     Position pos = new Position(row, col);
     Optional<LocatedStudent> student = classroom.getAt(pos);
@@ -905,47 +906,53 @@ public class ClassroomController {
       int claimCount = located.getClaims().size();
 
       CheckBox selectCheckBox = new CheckBox();
-      selectCheckBox.setStyle("-fx-padding: 2;");
+      selectCheckBox.setStyle("-fx-font-size: 12px;");
       // Preserve selection state when rebuilding the grid
       selectCheckBox.setSelected(selectedStudents.contains(key));
       selectCheckBox.setOnAction(e -> {
         if (selectCheckBox.isSelected()) {
           selectedStudents.add(key);
-          cell.setStyle("-fx-border-color: #ff9800; -fx-border-width: 3; -fx-background-color: #ffe0b2;");
+          cell.getStyleClass().remove("cell-verified");
+          cell.getStyleClass().remove("cell-unverified");
+          cell.getStyleClass().add("cell-selected");
         } else {
           selectedStudents.remove(key);
           boolean allNeighborsDeclared = classroom.hasAllNeighborsDeclared(located);
           if (!allNeighborsDeclared) {
-            cell.setStyle("-fx-border-color: #ff6600; -fx-border-width: 3; -fx-background-color: #fff0e6;");
+            cell.getStyleClass().remove("cell-selected");
+            cell.getStyleClass().remove("cell-verified");
+            cell.getStyleClass().add("cell-unverified");
           } else {
-            cell.setStyle("-fx-border-color: #0066cc; -fx-border-width: 2; -fx-background-color: #e6f2ff;");
+            cell.getStyleClass().remove("cell-selected");
+            cell.getStyleClass().remove("cell-unverified");
+            cell.getStyleClass().add("cell-verified");
           }
         }
       });
 
       Label nameLabel = new Label(name);
-      nameLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold;");
+      nameLabel.getStyleClass().add("cell-name");
       nameLabel.setWrapText(true);
       nameLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
       Label posLabel = new Label("(" + row + "," + col + ")");
-      posLabel.setStyle("-fx-font-size: 9; -fx-text-fill: #666666;");
+      posLabel.getStyleClass().add("cell-position");
 
       Label claimsLabel = new Label(claimCount + " claims");
-      claimsLabel.setStyle("-fx-font-size: 8; -fx-text-fill: #0066cc;");
+      claimsLabel.getStyleClass().add("cell-claims");
 
       // Check if all neighbors are declared
       boolean allNeighborsDeclared = classroom.hasAllNeighborsDeclared(located);
       if (selectedStudents.contains(key)) {
-        cell.setStyle("-fx-border-color: #ff9800; -fx-border-width: 3; -fx-background-color: #ffe0b2;");
+        cell.getStyleClass().add("cell-selected");
         cell.getChildren().addAll(selectCheckBox, nameLabel, posLabel, claimsLabel);
       } else if (!allNeighborsDeclared) {
-        cell.setStyle("-fx-border-color: #ff6600; -fx-border-width: 3; -fx-background-color: #fff0e6;");
+        cell.getStyleClass().add("cell-unverified");
         Label warningLabel = new Label(LanguageManager.getInstance().get("incomplete"));
-        warningLabel.setStyle("-fx-font-size: 7; -fx-text-fill: #ff6600; -fx-font-weight: bold;");
+        warningLabel.getStyleClass().add("cell-warning");
         cell.getChildren().addAll(selectCheckBox, nameLabel, posLabel, claimsLabel, warningLabel);
       } else {
-        cell.setStyle("-fx-border-color: #0066cc; -fx-border-width: 2; -fx-background-color: #e6f2ff;");
+        cell.getStyleClass().add("cell-verified");
         cell.getChildren().addAll(selectCheckBox, nameLabel, posLabel, claimsLabel);
       }
 

@@ -733,3 +733,158 @@
 .dark-mode .chart-pie-label-line {
   -fx-stroke: #7F8C8D;
 }
+
+/* ============================================
+   Classroom Layout Styling
+   ============================================ */
+
+.classroom-scroll {
+  -fx-fit-to-width: true;
+  -fx-fit-to-height: true;
+  -fx-background-color: white;
+  -fx-border-color: #ECF0F1;
+  -fx-border-width: 1;
+  -fx-border-radius: 4;
+}
+
+.classroom-grid {
+  -fx-hgap: 8;
+  -fx-vgap: 8;
+  -fx-padding: 15;
+  -fx-background-color: #FAFBFC;
+}
+
+/* Base classroom cell styling */
+.classroom-cell {
+  -fx-border-color: #BDC3C7;
+  -fx-border-width: 2;
+  -fx-border-radius: 6;
+  -fx-background-color: white;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 3, 0, 0, 1);
+  -fx-padding: 8;
+  -fx-spacing: 4;
+}
+
+.classroom-cell:hover {
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+}
+
+/* Cell styling - Verified (all neighbors declared) */
+.cell-verified {
+  -fx-border-color: #3498DB;
+  -fx-background-color: #E8F4F8;
+}
+
+.cell-verified .cell-name {
+  -fx-text-fill: #0E5A8A;
+}
+
+/* Cell styling - Unverified (incomplete neighbors) */
+.cell-unverified {
+  -fx-border-color: #F39C12;
+  -fx-background-color: #FEF5E7;
+}
+
+.cell-unverified .cell-name {
+  -fx-text-fill: #C87F0A;
+}
+
+/* Cell styling - Selected */
+.cell-selected {
+  -fx-border-color: #27AE60;
+  -fx-border-width: 3;
+  -fx-background-color: #D5F4E6;
+}
+
+.cell-selected .cell-name {
+  -fx-text-fill: #1E6F4B;
+}
+
+/* Cell labels */
+.cell-name {
+  -fx-font-size: 12px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #2C3E50;
+  -fx-wrap-text: true;
+  -fx-text-alignment: center;
+}
+
+.cell-position {
+  -fx-font-size: 9px;
+  -fx-text-fill: #7F8C8D;
+  -fx-font-style: italic;
+}
+
+.cell-claims {
+  -fx-font-size: 8px;
+  -fx-text-fill: #3498DB;
+  -fx-font-weight: 600;
+}
+
+.cell-warning {
+  -fx-font-size: 8px;
+  -fx-text-fill: #E74C3C;
+  -fx-font-weight: bold;
+}
+
+/* Dark mode classroom styling */
+.dark-mode .classroom-scroll {
+  -fx-background-color: #16213E;
+  -fx-border-color: #2E3A4E;
+}
+
+.dark-mode .classroom-grid {
+  -fx-background-color: #0F0F1E;
+}
+
+.dark-mode .classroom-cell {
+  -fx-border-color: #3E4A5C;
+  -fx-background-color: #1A252F;
+}
+
+.dark-mode .classroom-cell:hover {
+  -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.1), 5, 0, 0, 2);
+}
+
+.dark-mode .cell-verified {
+  -fx-border-color: #5DADE2;
+  -fx-background-color: #1B3A52;
+}
+
+.dark-mode .cell-verified .cell-name {
+  -fx-text-fill: #A8D8EA;
+}
+
+.dark-mode .cell-unverified {
+  -fx-border-color: #F39C12;
+  -fx-background-color: #3D2E1A;
+}
+
+.dark-mode .cell-unverified .cell-name {
+  -fx-text-fill: #F8C471;
+}
+
+.dark-mode .cell-selected {
+  -fx-border-color: #27AE60;
+  -fx-background-color: #1B3E28;
+}
+
+.dark-mode .cell-selected .cell-name {
+  -fx-text-fill: #52BE80;
+}
+
+.dark-mode .cell-name {
+  -fx-text-fill: #EAEAEA;
+}
+
+.dark-mode .cell-position {
+  -fx-text-fill: #95A5A6;
+}
+
+.dark-mode .cell-claims {
+  -fx-text-fill: #5DADE2;
+}
+
+.dark-mode .cell-warning {
+  -fx-text-fill: #F8B4A6;
+}
