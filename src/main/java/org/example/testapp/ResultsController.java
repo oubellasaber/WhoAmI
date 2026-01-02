@@ -203,39 +203,37 @@ public class ResultsController {
 
     // Name column
     nameCol = new TableColumn<>(LanguageManager.getInstance().get("student_name_col"));
-    nameCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> cellData.getValue().studentName));
+    nameCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().studentName));
     nameCol.setPrefWidth(120);
 
     // Status column
     statusCol = new TableColumn<>(LanguageManager.getInstance().get("status_col"));
-    statusCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> cellData.getValue().status));
+    statusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().status));
     statusCol.setPrefWidth(100);
     statusCol.setCellFactory(column -> new StatusCell());
 
     // Confidence column
     confidenceCol = new TableColumn<>(LanguageManager.getInstance().get("confidence_col"));
-    confidenceCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f%%", cellData.getValue().confidence * 100)));
+    confidenceCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f%%", cellData.getValue().confidence * 100)));
     confidenceCol.setPrefWidth(100);
 
     // Neighbor Verification column
     neighborCol = new TableColumn<>(LanguageManager.getInstance().get("neighbor_col"));
-    neighborCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f", cellData.getValue().neighborScore)));
+    neighborCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f", cellData.getValue().neighborScore)));
     neighborCol.setPrefWidth(80);
 
     // Seat Occupancy column
     occupancyCol = new TableColumn<>(LanguageManager.getInstance().get("occupancy_col"));
-    occupancyCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f", cellData.getValue().occupancyScore)));
+    occupancyCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f", cellData.getValue().occupancyScore)));
     occupancyCol.setPrefWidth(80);
 
     // Consensus column
     consensusCol = new TableColumn<>(LanguageManager.getInstance().get("consensus_col"));
-    consensusCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f", cellData.getValue().consensusScore)));
+    consensusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f", cellData.getValue().consensusScore)));
     consensusCol.setPrefWidth(80);
 
     resultsTable.getColumns().addAll(nameCol, statusCol, confidenceCol, neighborCol, occupancyCol, consensusCol);
@@ -268,28 +266,40 @@ public class ResultsController {
 
     exportJsonButton = new Button(LanguageManager.getInstance().get("export_json"));
     exportJsonButton.getStyleClass().add("button-success");
-    exportJsonButton.setPrefWidth(110);
+    exportJsonButton.setWrapText(true);
+    exportJsonButton.setMaxWidth(Double.MAX_VALUE);
     exportJsonButton.setOnAction(e -> exportResults("json"));
 
     exportCsvButton = new Button(LanguageManager.getInstance().get("export_csv"));
     exportCsvButton.getStyleClass().add("button-success");
-    exportCsvButton.setPrefWidth(110);
+    exportCsvButton.setWrapText(true);
+    exportCsvButton.setMaxWidth(Double.MAX_VALUE);
     exportCsvButton.setOnAction(e -> exportResults("csv"));
 
     exportPdfButton = new Button(LanguageManager.getInstance().get("export_pdf"));
     exportPdfButton.getStyleClass().add("button-success");
-    exportPdfButton.setPrefWidth(110);
+    exportPdfButton.setWrapText(true);
+    exportPdfButton.setMaxWidth(Double.MAX_VALUE);
     exportPdfButton.setOnAction(e -> exportResults("pdf"));
 
     exportExcelButton = new Button(LanguageManager.getInstance().get("export_excel"));
     exportExcelButton.getStyleClass().add("button-success");
-    exportExcelButton.setPrefWidth(110);
+    exportExcelButton.setWrapText(true);
+    exportExcelButton.setMaxWidth(Double.MAX_VALUE);
     exportExcelButton.setOnAction(e -> exportResults("xlsx"));
 
     exportImageButton = new Button(LanguageManager.getInstance().get("export_image"));
     exportImageButton.getStyleClass().add("button-success");
-    exportImageButton.setPrefWidth(110);
+    exportImageButton.setWrapText(true);
+    exportImageButton.setMaxWidth(Double.MAX_VALUE);
     exportImageButton.setOnAction(e -> exportResults("png"));
+
+    // Make buttons grow equally in the HBox
+    HBox.setHgrow(exportJsonButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportCsvButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportPdfButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportExcelButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportImageButton, javafx.scene.layout.Priority.ALWAYS);
 
     exportBox.getChildren().addAll(exportJsonButton, exportCsvButton, exportPdfButton, exportExcelButton,
         exportImageButton);

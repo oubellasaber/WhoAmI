@@ -215,23 +215,23 @@ public class ClassroomController {
 
     // Add test students with positions
     String[][] testStudents = {
-        { "Alice", "A" },
-        { "Bob", "B" },
-        { "Charlie", "C" },
-        { "Diana", "D" },
-        { "Eve", "E" },
-        { "Frank", "F" }, // Absent student - no position
-        { "Grace", "G" } // Uncertain student - conflicting claims
+        { "Fatima", "A" },
+        { "Ahmed", "B" },
+        { "Mohamed", "C" },
+        { "Hanane", "D" },
+        { "Sara", "E" },
+        { "Youssef", "F" }, // Absent student - no position
+        { "Yassine", "G" } // Uncertain student - conflicting claims
     };
 
     int[][] positions = {
-        { 0, 0 }, // Alice at row 0, col 0
+        { 0, 0 }, // Fatima at row 0, col 0
         { 0, 1 }, // Bob at row 0, col 1
-        { 0, 2 }, // Charlie at row 0, col 2
-        { 1, 0 }, // Diana at row 1, col 0
+        { 0, 2 }, // Mohamed at row 0, col 2
+        { 1, 0 }, // Hanane at row 1, col 0
         { 1, 1 }, // Eve at row 1, col 1
-        { -1, -1 }, // Frank - no position (absent)
-        { 1, 2 } // Grace at row 1, col 2 - will have weak/conflicting claims
+        { -1, -1 }, // Youssef - no position (absent)
+        { 1, 2 } // Yassine at row 1, col 2 - will have weak/conflicting claims
     };
 
     for (int i = 0; i < testStudents.length; i++) {
@@ -248,7 +248,7 @@ public class ClassroomController {
         // Place student in the classroom
         classroom.place(located);
       }
-      // Frank has no position - will be marked ABSENT
+      // Youssef has no position - will be marked ABSENT
 
       studentRegistry.put(id, located);
 
@@ -266,42 +266,42 @@ public class ClassroomController {
     }
 
     // Add test claims - INTENTIONALLY INCOMPLETE to demonstrate validation
-    // Alice (0,0): COMPLETE - has Bob RIGHT and Diana BACK ✓
-    addTestClaim("Alice", "Bob", Direction.RIGHT);
-    addTestClaim("Alice", "Diana", Direction.BACK);
+    // Fatima (0,0): COMPLETE - has Bob RIGHT and Hanane BACK ✓
+    addTestClaim("Fatima", "Ahmed", Direction.RIGHT);
+    addTestClaim("Fatima", "Hanane", Direction.BACK);
 
-    // Bob (0,1): COMPLETE - has Alice LEFT, Charlie RIGHT, and Eve BACK ✓
-    addTestClaim("Bob", "Alice", Direction.LEFT);
-    addTestClaim("Bob", "Charlie", Direction.RIGHT);
-    addTestClaim("Bob", "Eve", Direction.BACK);
+    // Bob (0,1): COMPLETE - has Fatima LEFT, Mohamed RIGHT, and Eve BACK ✓
+    addTestClaim("Ahmed", "Fatima", Direction.LEFT);
+    addTestClaim("Ahmed", "Mohamed", Direction.RIGHT);
+    addTestClaim("Ahmed", "Sara", Direction.BACK);
 
-    // Charlie (0,2): has Bob LEFT and Grace BACK ✓
-    addTestClaim("Charlie", "Bob", Direction.LEFT);
-    addTestClaim("Charlie", "Grace", Direction.BACK); // Grace is at (1,2) behind Charlie
+    // Mohamed (0,2): has Bob LEFT and Yassine BACK ✓
+    addTestClaim("Mohamed", "Ahmed", Direction.LEFT);
+    addTestClaim("Mohamed", "Yassine", Direction.BACK); // Yassine is at (1,2) behind Mohamed
 
-    // Diana (1,0): COMPLETE - has Eve RIGHT and Alice FRONT ✓
-    addTestClaim("Diana", "Eve", Direction.RIGHT);
-    addTestClaim("Diana", "Alice", Direction.FRONT);
+    // Hanane (1,0): COMPLETE - has Eve RIGHT and Fatima FRONT ✓
+    addTestClaim("Hanane", "Sara", Direction.RIGHT);
+    addTestClaim("Hanane", "Fatima", Direction.FRONT);
 
-    // Eve (1,1): has Diana LEFT, Bob FRONT, declares RIGHT is Grace
-    addTestClaim("Eve", "Diana", Direction.LEFT);
-    addTestClaim("Eve", "Bob", Direction.FRONT);
-    addTestClaim("Eve", "Grace", Direction.RIGHT); // Grace is to the right
-    addAbsentClaim("Eve", Direction.BACK); // Position (2,1) is empty
+    // Eve (1,1): has Hanane LEFT, Bob FRONT, declares RIGHT is Yassine
+    addTestClaim("Sara", "Hanane", Direction.LEFT);
+    addTestClaim("Sara", "Ahmed", Direction.FRONT);
+    addTestClaim("Sara", "Yassine", Direction.RIGHT); // Yassine is to the right
+    addAbsentClaim("Sara", Direction.BACK); // Position (2,1) is empty
 
-    // Grace (1,2): LIAR - claims absent student Frank is her neighbor
+    // Yassine (1,2): LIAR - claims absent student Youssef is her neighbor
     // This creates UNCERTAIN status through conflict detection
-    addTestClaim("Grace", "Charlie", Direction.FRONT); // Correct: Charlie is at (0,2)
-    addTestClaim("Grace", "Eve", Direction.LEFT); // Correct: Eve is at (1,1)
-    addTestClaim("Grace", "Frank", Direction.BACK); // LYING: Frank is absent, not at (2,2)!
-    // Grace's uncertainty will come from claiming an absent student
+    addTestClaim("Yassine", "Mohamed", Direction.FRONT); // Correct: Mohamed is at (0,2)
+    addTestClaim("Yassine", "Sara", Direction.LEFT); // Correct: Eve is at (1,1)
+    addTestClaim("Yassine", "Youssef", Direction.BACK); // LYING: Youssef is absent, not at (2,2)!
+    // Yassine's uncertainty will come from claiming an absent student
 
-    // Frank makes no claims and has no position
+    // Youssef makes no claims and has no position
 
     updateClaimsList();
     updateClassroomVisualization();
     statusLabel.setText(
-        "✓ Test data loaded: 7 students - Alice/Bob/Charlie/Diana/Eve: PRESENT, Grace: UNCERTAIN (liar claiming absent Frank), Frank: ABSENT");
+        "✓ Test data loaded: 7 students - Fatima/Bob/Mohamed/Hanane/Eve: PRESENT, Yassine: UNCERTAIN (liar claiming absent Youssef), Youssef: ABSENT");
   }
 
   /**
