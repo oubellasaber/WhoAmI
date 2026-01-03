@@ -215,23 +215,23 @@ public class ClassroomController {
 
     // Add test students with positions
     String[][] testStudents = {
-        { "Alice", "A" },
-        { "Bob", "B" },
-        { "Charlie", "C" },
-        { "Diana", "D" },
-        { "Eve", "E" },
-        { "Frank", "F" }, // Absent student - no position
-        { "Grace", "G" } // Uncertain student - conflicting claims
+        { "Fatima", "A" },
+        { "Ahmed", "B" },
+        { "Mohamed", "C" },
+        { "Hanane", "D" },
+        { "Sara", "E" },
+        { "Youssef", "F" }, // Absent student - no position
+        { "Yassine", "G" } // Uncertain student - conflicting claims
     };
 
     int[][] positions = {
-        { 0, 0 }, // Alice at row 0, col 0
+        { 0, 0 }, // Fatima at row 0, col 0
         { 0, 1 }, // Bob at row 0, col 1
-        { 0, 2 }, // Charlie at row 0, col 2
-        { 1, 0 }, // Diana at row 1, col 0
+        { 0, 2 }, // Mohamed at row 0, col 2
+        { 1, 0 }, // Hanane at row 1, col 0
         { 1, 1 }, // Eve at row 1, col 1
-        { -1, -1 }, // Frank - no position (absent)
-        { 1, 2 } // Grace at row 1, col 2 - will have weak/conflicting claims
+        { -1, -1 }, // Youssef - no position (absent)
+        { 1, 2 } // Yassine at row 1, col 2 - will have weak/conflicting claims
     };
 
     for (int i = 0; i < testStudents.length; i++) {
@@ -248,7 +248,7 @@ public class ClassroomController {
         // Place student in the classroom
         classroom.place(located);
       }
-      // Frank has no position - will be marked ABSENT
+      // Youssef has no position - will be marked ABSENT
 
       studentRegistry.put(id, located);
 
@@ -266,42 +266,42 @@ public class ClassroomController {
     }
 
     // Add test claims - INTENTIONALLY INCOMPLETE to demonstrate validation
-    // Alice (0,0): COMPLETE - has Bob RIGHT and Diana BACK ✓
-    addTestClaim("Alice", "Bob", Direction.RIGHT);
-    addTestClaim("Alice", "Diana", Direction.BACK);
+    // Fatima (0,0): COMPLETE - has Bob RIGHT and Hanane BACK ✓
+    addTestClaim("Fatima", "Ahmed", Direction.RIGHT);
+    addTestClaim("Fatima", "Hanane", Direction.BACK);
 
-    // Bob (0,1): COMPLETE - has Alice LEFT, Charlie RIGHT, and Eve BACK ✓
-    addTestClaim("Bob", "Alice", Direction.LEFT);
-    addTestClaim("Bob", "Charlie", Direction.RIGHT);
-    addTestClaim("Bob", "Eve", Direction.BACK);
+    // Bob (0,1): COMPLETE - has Fatima LEFT, Mohamed RIGHT, and Eve BACK ✓
+    addTestClaim("Ahmed", "Fatima", Direction.LEFT);
+    addTestClaim("Ahmed", "Mohamed", Direction.RIGHT);
+    addTestClaim("Ahmed", "Sara", Direction.BACK);
 
-    // Charlie (0,2): has Bob LEFT and Grace BACK ✓
-    addTestClaim("Charlie", "Bob", Direction.LEFT);
-    addTestClaim("Charlie", "Grace", Direction.BACK); // Grace is at (1,2) behind Charlie
+    // Mohamed (0,2): has Bob LEFT and Yassine BACK ✓
+    addTestClaim("Mohamed", "Ahmed", Direction.LEFT);
+    addTestClaim("Mohamed", "Yassine", Direction.BACK); // Yassine is at (1,2) behind Mohamed
 
-    // Diana (1,0): COMPLETE - has Eve RIGHT and Alice FRONT ✓
-    addTestClaim("Diana", "Eve", Direction.RIGHT);
-    addTestClaim("Diana", "Alice", Direction.FRONT);
+    // Hanane (1,0): COMPLETE - has Eve RIGHT and Fatima FRONT ✓
+    addTestClaim("Hanane", "Sara", Direction.RIGHT);
+    addTestClaim("Hanane", "Fatima", Direction.FRONT);
 
-    // Eve (1,1): has Diana LEFT, Bob FRONT, declares RIGHT is Grace
-    addTestClaim("Eve", "Diana", Direction.LEFT);
-    addTestClaim("Eve", "Bob", Direction.FRONT);
-    addTestClaim("Eve", "Grace", Direction.RIGHT); // Grace is to the right
-    addAbsentClaim("Eve", Direction.BACK); // Position (2,1) is empty
+    // Eve (1,1): has Hanane LEFT, Bob FRONT, declares RIGHT is Yassine
+    addTestClaim("Sara", "Hanane", Direction.LEFT);
+    addTestClaim("Sara", "Ahmed", Direction.FRONT);
+    addTestClaim("Sara", "Yassine", Direction.RIGHT); // Yassine is to the right
+    addAbsentClaim("Sara", Direction.BACK); // Position (2,1) is empty
 
-    // Grace (1,2): LIAR - claims absent student Frank is her neighbor
+    // Yassine (1,2): LIAR - claims absent student Youssef is her neighbor
     // This creates UNCERTAIN status through conflict detection
-    addTestClaim("Grace", "Charlie", Direction.FRONT); // Correct: Charlie is at (0,2)
-    addTestClaim("Grace", "Eve", Direction.LEFT); // Correct: Eve is at (1,1)
-    addTestClaim("Grace", "Frank", Direction.BACK); // LYING: Frank is absent, not at (2,2)!
-    // Grace's uncertainty will come from claiming an absent student
+    addTestClaim("Yassine", "Mohamed", Direction.FRONT); // Correct: Mohamed is at (0,2)
+    addTestClaim("Yassine", "Sara", Direction.LEFT); // Correct: Eve is at (1,1)
+    addTestClaim("Yassine", "Youssef", Direction.BACK); // LYING: Youssef is absent, not at (2,2)!
+    // Yassine's uncertainty will come from claiming an absent student
 
-    // Frank makes no claims and has no position
+    // Youssef makes no claims and has no position
 
     updateClaimsList();
     updateClassroomVisualization();
     statusLabel.setText(
-        "✓ Test data loaded: 7 students - Alice/Bob/Charlie/Diana/Eve: PRESENT, Grace: UNCERTAIN (liar claiming absent Frank), Frank: ABSENT");
+        "✓ Test data loaded: 7 students - Fatima/Bob/Mohamed/Hanane/Eve: PRESENT, Yassine: UNCERTAIN (liar claiming absent Youssef), Youssef: ABSENT");
   }
 
   /**
@@ -695,24 +695,25 @@ public class ClassroomController {
   }
 
   public Node getView() {
-    VBox mainLayout = new VBox(10);
-    mainLayout.setPadding(new Insets(15));
+    VBox mainLayout = new VBox(15);
+    mainLayout.setPadding(new Insets(20));
+    mainLayout.setStyle("-fx-background-color: -fx-background;");
 
     // Control panel
     HBox controlPanel = createControlPanel();
     mainLayout.getChildren().add(controlPanel);
 
     // Classroom grid and claims
-    HBox contentArea = new HBox(15);
+    HBox contentArea = new HBox(20);
     contentArea.setPrefHeight(700);
 
     // Classroom grid
     VBox classroomPanel = createClassroomPanel();
-    classroomPanel.setPrefWidth(500);
+    classroomPanel.setPrefWidth(550);
 
     // Claims and info panel
     VBox infoPanel = createInfoPanel();
-    infoPanel.setPrefWidth(400);
+    infoPanel.setPrefWidth(450);
 
     contentArea.getChildren().addAll(classroomPanel, infoPanel);
     HBox.setHgrow(classroomPanel, Priority.ALWAYS);
@@ -722,7 +723,8 @@ public class ClassroomController {
 
     // Status bar
     statusLabel = new Label(LanguageManager.getInstance().get("status_ready"));
-    statusLabel.setStyle("-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-width: 1 0 0 0;");
+    statusLabel.getStyleClass().add("status-bar");
+    statusLabel.setStyle("-fx-padding: 12px;");
     mainLayout.getChildren().add(statusLabel);
 
     ScrollPane sp = new ScrollPane(mainLayout);
@@ -734,71 +736,89 @@ public class ClassroomController {
   }
 
   private HBox createControlPanel() {
-    HBox panel = new HBox(15);
-    panel.setPadding(new Insets(10));
-    panel.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;");
+    HBox panel = new HBox(12);
+    panel.setPadding(new Insets(15));
+    panel.getStyleClass().add("card");
+    panel.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    
     rowLabel = new Label(LanguageManager.getInstance().get("rows"));
+    rowLabel.getStyleClass().add("label-header");
+    
     rowsCombo = new ComboBox<>();
     rowsCombo.getItems().addAll(2, 3, 4, 5);
     rowsCombo.setValue(3);
+    rowsCombo.setPrefWidth(70);
+    
     colLabel = new Label(LanguageManager.getInstance().get("cols"));
+    colLabel.getStyleClass().add("label-header");
+    
     colsCombo = new ComboBox<>();
     colsCombo.getItems().addAll(2, 3, 4, 5);
     colsCombo.setValue(4);
+    colsCombo.setPrefWidth(70);
+    
     createButton = new Button(LanguageManager.getInstance().get("create"));
-    createButton.setPrefWidth(150);
-    createButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    createButton.setPrefWidth(120);
     createButton.setOnAction(e -> createClassroom());
+    
     analyzeButton = new Button(LanguageManager.getInstance().get("analyze"));
-    analyzeButton.setPrefWidth(150);
-    analyzeButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    analyzeButton.setPrefWidth(120);
+    analyzeButton.getStyleClass().add("button-warning");
     analyzeButton.setOnAction(e -> analyzeAttendance());
+    
     testDataButton = new Button(LanguageManager.getInstance().get("test_data"));
-    testDataButton.setPrefWidth(150);
-    testDataButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #0066cc;");
+    testDataButton.setPrefWidth(120);
+    testDataButton.getStyleClass().add("button-outline");
     testDataButton.setOnAction(e -> loadTestData());
+    
     validateButton = new Button(LanguageManager.getInstance().get("validate"));
-    validateButton.setPrefWidth(150);
-    validateButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #ff6600;");
+    validateButton.setPrefWidth(120);
+    validateButton.getStyleClass().add("button-outline");
     validateButton.setOnAction(e -> validateNeighbors());
+    
     importCsvButton = new Button(LanguageManager.getInstance().get("import_csv"));
-    importCsvButton.setPrefWidth(130);
-    importCsvButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #007700;");
+    importCsvButton.setPrefWidth(120);
+    importCsvButton.getStyleClass().add("button-success");
     importCsvButton.setOnAction(e -> importFromCsv());
 
     // NEW: Setup Firestore Button (to initialize for student registration)
     setupFirestoreButton = new Button(LanguageManager.getInstance().get("setup_firestore"));
-    setupFirestoreButton.setPrefWidth(140);
-    setupFirestoreButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #4CAF50;");
+    setupFirestoreButton.setPrefWidth(120);
+    setupFirestoreButton.getStyleClass().add("button-success");
     setupFirestoreButton.setTooltip(new Tooltip("Initialize Firestore for student registration"));
     setupFirestoreButton.setOnAction(e -> setupFirestoreForClass());
 
     // Import Firestore Button (disabled until setup is done)
     importFirestoreButton = new Button(LanguageManager.getInstance().get("import_firestore"));
-    importFirestoreButton.setPrefWidth(140);
-    importFirestoreButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #aaaaaa;");
+    importFirestoreButton.setPrefWidth(120);
+    importFirestoreButton.getStyleClass().add("button-success");
     importFirestoreButton.setDisable(true);
     importFirestoreButton.setTooltip(new Tooltip("Import registered students (requires setup first)"));
     importFirestoreButton.setOnAction(e -> importFromFirestore());
 
     selectAllButton = new Button(LanguageManager.getInstance().get("select_all"));
     selectAllButton.setPrefWidth(100);
-    selectAllButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    selectAllButton.getStyleClass().add("button-secondary");
     selectAllButton.setOnAction(e -> selectAllStudents());
+    
     deselectAllButton = new Button(LanguageManager.getInstance().get("deselect_all"));
     deselectAllButton.setPrefWidth(110);
-    deselectAllButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    deselectAllButton.getStyleClass().add("button-secondary");
     deselectAllButton.setOnAction(e -> deselectAllStudents());
+    
     batchPresentButton = new Button(LanguageManager.getInstance().get("mark_present"));
-    batchPresentButton.setPrefWidth(150);
-    batchPresentButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #2ecc71;");
+    batchPresentButton.setPrefWidth(120);
+    batchPresentButton.getStyleClass().add("button-success");
     batchPresentButton.setOnAction(e -> batchMarkPresent());
+    
     batchAbsentButton = new Button(LanguageManager.getInstance().get("mark_absent"));
-    batchAbsentButton.setPrefWidth(150);
-    batchAbsentButton.setStyle("-fx-font-size: 11; -fx-padding: 8; -fx-text-fill: #e74c3c;");
+    batchAbsentButton.setPrefWidth(120);
+    batchAbsentButton.getStyleClass().add("button-danger");
     batchAbsentButton.setOnAction(e -> batchMarkAbsent());
 
     setupLabel = new Label(LanguageManager.getInstance().get("setup_classroom"));
+    setupLabel.getStyleClass().add("label-header");
+    setupLabel.setStyle("-fx-font-weight: bold; -fx-padding: 0 10 0 0;");
     panel.getChildren().addAll(
         setupLabel,
         rowLabel, rowsCombo,
@@ -819,23 +839,24 @@ public class ClassroomController {
   }
 
   private VBox createClassroomPanel() {
-    VBox panel = new VBox(10);
-    panel.setPadding(new Insets(10));
-    panel.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1;");
+    VBox panel = new VBox(12);
+    panel.setPadding(new Insets(15));
+    panel.getStyleClass().add("card");
 
     classroomTitleLabel = new Label(LanguageManager.getInstance().get("classroom_layout"));
-    classroomTitleLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+    classroomTitleLabel.getStyleClass().add("label-subtitle");
 
     ScrollPane gridScroll = new ScrollPane();
     classroomGrid = new GridPane();
-    classroomGrid.setHgap(5);
-    classroomGrid.setVgap(5);
-    classroomGrid.setPadding(new Insets(10));
-    classroomGrid.setStyle("-fx-border-color: #f0f0f0;");
+    classroomGrid.setHgap(8);
+    classroomGrid.setVgap(8);
+    classroomGrid.setPadding(new Insets(15));
+    classroomGrid.getStyleClass().add("classroom-grid");
 
     gridScroll.setContent(classroomGrid);
     gridScroll.setFitToWidth(true);
     gridScroll.setFitToHeight(true);
+    gridScroll.getStyleClass().add("classroom-scroll");
 
     panel.getChildren().addAll(classroomTitleLabel, gridScroll);
 
@@ -867,12 +888,12 @@ public class ClassroomController {
    * Create a single classroom cell with optional student.
    */
   private VBox createClassroomCell(int row, int col) {
-    VBox cell = new VBox();
-    cell.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1; -fx-background-color: #f9f9f9;");
-    cell.setPrefWidth(80);
-    cell.setPrefHeight(80);
+    VBox cell = new VBox(6);
+    cell.getStyleClass().add("classroom-cell");
+    cell.setPrefWidth(100);
+    cell.setPrefHeight(100);
     cell.setAlignment(Pos.CENTER);
-    cell.setPadding(new Insets(5));
+    cell.setPadding(new Insets(8));
 
     Position pos = new Position(row, col);
     Optional<LocatedStudent> student = classroom.getAt(pos);
@@ -885,47 +906,57 @@ public class ClassroomController {
       int claimCount = located.getClaims().size();
 
       CheckBox selectCheckBox = new CheckBox();
-      selectCheckBox.setStyle("-fx-padding: 2;");
+      selectCheckBox.setStyle("-fx-font-size: 12px;");
       // Preserve selection state when rebuilding the grid
       selectCheckBox.setSelected(selectedStudents.contains(key));
       selectCheckBox.setOnAction(e -> {
         if (selectCheckBox.isSelected()) {
           selectedStudents.add(key);
-          cell.setStyle("-fx-border-color: #ff9800; -fx-border-width: 3; -fx-background-color: #ffe0b2;");
+          cell.getStyleClass().remove("cell-verified");
+          cell.getStyleClass().remove("cell-unverified");
+          cell.getStyleClass().add("cell-selected");
+          // Animate selection
+          AnimationUtils.bounce(cell).play();
         } else {
           selectedStudents.remove(key);
           boolean allNeighborsDeclared = classroom.hasAllNeighborsDeclared(located);
           if (!allNeighborsDeclared) {
-            cell.setStyle("-fx-border-color: #ff6600; -fx-border-width: 3; -fx-background-color: #fff0e6;");
+            cell.getStyleClass().remove("cell-selected");
+            cell.getStyleClass().remove("cell-verified");
+            cell.getStyleClass().add("cell-unverified");
           } else {
-            cell.setStyle("-fx-border-color: #0066cc; -fx-border-width: 2; -fx-background-color: #e6f2ff;");
+            cell.getStyleClass().remove("cell-selected");
+            cell.getStyleClass().remove("cell-unverified");
+            cell.getStyleClass().add("cell-verified");
           }
+          // Animate state change
+          AnimationUtils.scaleDown(cell, javafx.util.Duration.millis(200)).play();
         }
       });
 
       Label nameLabel = new Label(name);
-      nameLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold;");
+      nameLabel.getStyleClass().add("cell-name");
       nameLabel.setWrapText(true);
       nameLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
       Label posLabel = new Label("(" + row + "," + col + ")");
-      posLabel.setStyle("-fx-font-size: 9; -fx-text-fill: #666666;");
+      posLabel.getStyleClass().add("cell-position");
 
       Label claimsLabel = new Label(claimCount + " claims");
-      claimsLabel.setStyle("-fx-font-size: 8; -fx-text-fill: #0066cc;");
+      claimsLabel.getStyleClass().add("cell-claims");
 
       // Check if all neighbors are declared
       boolean allNeighborsDeclared = classroom.hasAllNeighborsDeclared(located);
       if (selectedStudents.contains(key)) {
-        cell.setStyle("-fx-border-color: #ff9800; -fx-border-width: 3; -fx-background-color: #ffe0b2;");
+        cell.getStyleClass().add("cell-selected");
         cell.getChildren().addAll(selectCheckBox, nameLabel, posLabel, claimsLabel);
       } else if (!allNeighborsDeclared) {
-        cell.setStyle("-fx-border-color: #ff6600; -fx-border-width: 3; -fx-background-color: #fff0e6;");
+        cell.getStyleClass().add("cell-unverified");
         Label warningLabel = new Label(LanguageManager.getInstance().get("incomplete"));
-        warningLabel.setStyle("-fx-font-size: 7; -fx-text-fill: #ff6600; -fx-font-weight: bold;");
+        warningLabel.getStyleClass().add("cell-warning");
         cell.getChildren().addAll(selectCheckBox, nameLabel, posLabel, claimsLabel, warningLabel);
       } else {
-        cell.setStyle("-fx-border-color: #0066cc; -fx-border-width: 2; -fx-background-color: #e6f2ff;");
+        cell.getStyleClass().add("cell-verified");
         cell.getChildren().addAll(selectCheckBox, nameLabel, posLabel, claimsLabel);
       }
 
@@ -955,23 +986,28 @@ public class ClassroomController {
   }
 
   private VBox createInfoPanel() {
-    VBox panel = new VBox(10);
-    panel.setPadding(new Insets(10));
-    panel.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1;");
+    VBox panel = new VBox(15);
+    panel.setPadding(new Insets(15));
+    panel.getStyleClass().add("card");
 
     // Students section
     studentsLabel = new Label(LanguageManager.getInstance().get("students"));
-    studentsLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+    studentsLabel.getStyleClass().add("label-subtitle");
 
     studentsListView = new ListView<>();
     studentsListView.setPrefHeight(150);
-    studentsListView.setStyle("-fx-control-inner-background: #ffffff;");
 
-    // Add student button
-    HBox addStudentBox = new HBox(5);
+    // Add student box with better styling
+    HBox addStudentBox = new HBox(8);
+    addStudentBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    
     studentNameField = new TextField();
     studentNameField.setPromptText(LanguageManager.getInstance().get("student_name"));
+    studentNameField.setPrefWidth(200);
+    HBox.setHgrow(studentNameField, Priority.ALWAYS);
+    
     addStudentButton = new Button(LanguageManager.getInstance().get("add_student"));
+    addStudentButton.getStyleClass().add("button-success");
     addStudentButton.setOnAction(e -> {
       String name = studentNameField.getText().trim();
       if (!name.isEmpty()) {
@@ -983,23 +1019,34 @@ public class ClassroomController {
 
     // Claims section
     claimsHeaderLabel = new Label(LanguageManager.getInstance().get("claims"));
-    claimsHeaderLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+    claimsHeaderLabel.getStyleClass().add("label-subtitle");
 
     claimsListView = new ListView<>();
     claimsListView.setPrefHeight(200);
-    claimsListView.setStyle("-fx-control-inner-background: #ffffff;");
 
-    // Add claim button
-    HBox addClaimBox = new HBox(5);
+    // Add claim box with better styling
+    VBox addClaimBox = new VBox(8);
+    
+    HBox combo1 = new HBox(8);
     claimerCombo = new ComboBox<>();
+    claimerCombo.setPromptText(LanguageManager.getInstance().get("claimer"));
+    claimerCombo.setPrefWidth(150);
+    
     targetCombo = new ComboBox<>();
+    targetCombo.setPromptText(LanguageManager.getInstance().get("target"));
+    targetCombo.setPrefWidth(150);
+    
+    combo1.getChildren().addAll(claimerCombo, targetCombo);
+    
+    HBox combo2 = new HBox(8);
     directionCombo = new ComboBox<>();
     directionCombo.getItems().addAll(Direction.values());
-    claimerCombo.setPromptText(LanguageManager.getInstance().get("claimer"));
-    targetCombo.setPromptText(LanguageManager.getInstance().get("target"));
     directionCombo.setPromptText(LanguageManager.getInstance().get("direction"));
+    directionCombo.setPrefWidth(150);
 
     addClaimButton = new Button(LanguageManager.getInstance().get("add_claim"));
+    addClaimButton.getStyleClass().add("button-success");
+    addClaimButton.setPrefWidth(150);
     addClaimButton.setOnAction(e -> {
       if (claimerCombo.getValue() != null && targetCombo.getValue() != null && directionCombo.getValue() != null) {
         addClaim(claimerCombo.getValue(), targetCombo.getValue(), directionCombo.getValue());
@@ -1007,13 +1054,14 @@ public class ClassroomController {
       }
     });
 
-    addClaimBox.getChildren().addAll(claimerCombo, targetCombo, directionCombo, addClaimButton);
-    addClaimBox.setStyle("-fx-font-size: 10;");
+    combo2.getChildren().addAll(directionCombo, addClaimButton);
+    addClaimBox.getChildren().addAll(combo1, combo2);
 
     panel.getChildren().addAll(
         studentsLabel,
         studentsListView,
         addStudentBox,
+        new Separator(),
         claimsHeaderLabel,
         claimsListView,
         addClaimBox);

@@ -49,12 +49,15 @@ public class ResultsController {
   }
 
   public Node getView() {
-    VBox mainLayout = new VBox(10);
-    mainLayout.setPadding(new Insets(15));
+    VBox mainLayout = new VBox(15);
+    mainLayout.setPadding(new Insets(20));
+    mainLayout.setStyle("-fx-background-color: -fx-background;");
+    mainLayout.setMaxWidth(Double.MAX_VALUE);
+    mainLayout.setPrefWidth(Double.MAX_VALUE);
 
     // Title
     titleLabel = new Label(LanguageManager.getInstance().get("attendance_analysis_results"));
-    titleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+    titleLabel.getStyleClass().add("label-title");
 
     // Filter controls
     HBox filterBox = createFilterBox();
@@ -64,41 +67,59 @@ public class ResultsController {
 
     // Refresh button
     refreshButton = new Button(LanguageManager.getInstance().get("refresh_results"));
-    refreshButton.setOnAction(e -> loadLatestResults());
+    refreshButton.getStyleClass().add("button-outline");
+    refreshButton.setPrefWidth(150);
+    refreshButton.setOnAction(e -> {
+      AnimationUtils.spin(refreshButton).play();
+      loadLatestResults();
+    });
 
     // Summary statistics
     VBox summaryBox = createSummaryBox();
 
     mainLayout.getChildren().addAll(titleLabel, filterBox, refreshButton, resultsTable, summaryBox);
     VBox.setVgrow(resultsTable, javafx.scene.layout.Priority.ALWAYS);
+    VBox.setVgrow(summaryBox, javafx.scene.layout.Priority.SOMETIMES);
 
     // Load initial results if any
     loadLatestResults();
 
     // Listen for language changes to update all labels/buttons/headers live
     LanguageManager.getInstance().addLanguageChangeListener(lang -> updateLanguageTexts());
-    return new ScrollPane(mainLayout);
+    
+    ScrollPane scrollPane = new ScrollPane(mainLayout);
+    scrollPane.setFitToWidth(true);
+    scrollPane.setFitToHeight(true);
+    return scrollPane;
   }
 
   private HBox createFilterBox() {
     HBox filterBox = new HBox(15);
-    filterBox.setPadding(new Insets(10));
-    filterBox.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5;");
+    filterBox.setPadding(new Insets(15));
+    filterBox.getStyleClass().add("card");
+    filterBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    filterBox.setMaxWidth(Double.MAX_VALUE);
+    filterBox.setPrefWidth(Double.MAX_VALUE);
 
     searchLabel = new Label(LanguageManager.getInstance().get("search_name"));
+    searchLabel.getStyleClass().add("label-header");
+    
     searchField = new TextField();
     searchField.setPromptText(LanguageManager.getInstance().get("enter_student_name"));
-    searchField.setPrefWidth(200);
+    searchField.setPrefWidth(220);
     searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
 
     filterStatusLabel = new Label(LanguageManager.getInstance().get("filter_status"));
+    filterStatusLabel.getStyleClass().add("label-header");
+    
     statusFilter = new ComboBox<>();
     statusFilter.getItems().addAll(LanguageManager.getInstance().get("all"), "PRESENT", "ABSENT", "UNCERTAIN");
     statusFilter.setValue(LanguageManager.getInstance().get("all"));
-    statusFilter.setPrefWidth(120);
+    statusFilter.setPrefWidth(140);
     statusFilter.setOnAction(e -> applyFilters());
 
     clearButton = new Button(LanguageManager.getInstance().get("clear_filters"));
+    clearButton.getStyleClass().add("button-secondary");
     clearButton.setOnAction(e -> {
       searchField.clear();
       statusFilter.setValue(LanguageManager.getInstance().get("all"));
@@ -121,6 +142,8 @@ public class ResultsController {
         })
         .toList();
 
+    // Fade animation for table update
+    AnimationUtils.fadeScaleIn(resultsTable, javafx.util.Duration.millis(300)).play();
     resultsTable.getItems().setAll(filteredResults);
   }
 
@@ -175,42 +198,42 @@ public class ResultsController {
     resultsTable = new TableView<>();
     resultsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     resultsTable.setPrefHeight(400);
+    resultsTable.setMaxWidth(Double.MAX_VALUE);
+    resultsTable.setPrefWidth(Double.MAX_VALUE);
 
     // Name column
     nameCol = new TableColumn<>(LanguageManager.getInstance().get("student_name_col"));
-    nameCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> cellData.getValue().studentName));
+    nameCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().studentName));
     nameCol.setPrefWidth(120);
 
     // Status column
     statusCol = new TableColumn<>(LanguageManager.getInstance().get("status_col"));
-    statusCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> cellData.getValue().status));
+    statusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().status));
     statusCol.setPrefWidth(100);
     statusCol.setCellFactory(column -> new StatusCell());
 
     // Confidence column
     confidenceCol = new TableColumn<>(LanguageManager.getInstance().get("confidence_col"));
-    confidenceCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f%%", cellData.getValue().confidence * 100)));
+    confidenceCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f%%", cellData.getValue().confidence * 100)));
     confidenceCol.setPrefWidth(100);
 
     // Neighbor Verification column
     neighborCol = new TableColumn<>(LanguageManager.getInstance().get("neighbor_col"));
-    neighborCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f", cellData.getValue().neighborScore)));
+    neighborCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f", cellData.getValue().neighborScore)));
     neighborCol.setPrefWidth(80);
 
     // Seat Occupancy column
     occupancyCol = new TableColumn<>(LanguageManager.getInstance().get("occupancy_col"));
-    occupancyCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f", cellData.getValue().occupancyScore)));
+    occupancyCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f", cellData.getValue().occupancyScore)));
     occupancyCol.setPrefWidth(80);
 
     // Consensus column
     consensusCol = new TableColumn<>(LanguageManager.getInstance().get("consensus_col"));
-    consensusCol.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-        () -> String.format("%.2f", cellData.getValue().consensusScore)));
+    consensusCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+        String.format("%.2f", cellData.getValue().consensusScore)));
     consensusCol.setPrefWidth(80);
 
     resultsTable.getColumns().addAll(nameCol, statusCol, confidenceCol, neighborCol, occupancyCol, consensusCol);
@@ -219,44 +242,69 @@ public class ResultsController {
   }
 
   private VBox createSummaryBox() {
-    VBox summaryBox = new VBox(10);
+    VBox summaryBox = new VBox(12);
     summaryBox.setPadding(new Insets(15));
-    summaryBox.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5;");
+    summaryBox.getStyleClass().add("card");
+    summaryBox.setMaxWidth(Double.MAX_VALUE);
+    summaryBox.setPrefWidth(Double.MAX_VALUE);
 
     summaryTitleLabel = new Label(LanguageManager.getInstance().get("summary_statistics"));
-    summaryTitleLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+    summaryTitleLabel.getStyleClass().add("label-subtitle");
 
     summaryLabel = new Label(LanguageManager.getInstance().get("no_results_yet"));
-    summaryLabel.setStyle("-fx-font-size: 11;");
+    summaryLabel.getStyleClass().add("label-secondary");
     summaryLabel.setWrapText(true);
 
+    Label exportLabel = new Label("Export Options:");
+    exportLabel.getStyleClass().add("label-header");
+    
     HBox exportBox = new HBox(10);
-    exportBox.setStyle("-fx-alignment: center-left;");
+    exportBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    exportBox.setPadding(new Insets(10, 0, 0, 0));
+    exportBox.setMaxWidth(Double.MAX_VALUE);
+    exportBox.setPrefWidth(Double.MAX_VALUE);
 
     exportJsonButton = new Button(LanguageManager.getInstance().get("export_json"));
-    exportJsonButton.setPrefWidth(120);
+    exportJsonButton.getStyleClass().add("button-success");
+    exportJsonButton.setWrapText(true);
+    exportJsonButton.setMaxWidth(Double.MAX_VALUE);
     exportJsonButton.setOnAction(e -> exportResults("json"));
 
     exportCsvButton = new Button(LanguageManager.getInstance().get("export_csv"));
-    exportCsvButton.setPrefWidth(120);
+    exportCsvButton.getStyleClass().add("button-success");
+    exportCsvButton.setWrapText(true);
+    exportCsvButton.setMaxWidth(Double.MAX_VALUE);
     exportCsvButton.setOnAction(e -> exportResults("csv"));
 
     exportPdfButton = new Button(LanguageManager.getInstance().get("export_pdf"));
-    exportPdfButton.setPrefWidth(120);
+    exportPdfButton.getStyleClass().add("button-success");
+    exportPdfButton.setWrapText(true);
+    exportPdfButton.setMaxWidth(Double.MAX_VALUE);
     exportPdfButton.setOnAction(e -> exportResults("pdf"));
 
     exportExcelButton = new Button(LanguageManager.getInstance().get("export_excel"));
-    exportExcelButton.setPrefWidth(130);
+    exportExcelButton.getStyleClass().add("button-success");
+    exportExcelButton.setWrapText(true);
+    exportExcelButton.setMaxWidth(Double.MAX_VALUE);
     exportExcelButton.setOnAction(e -> exportResults("xlsx"));
 
     exportImageButton = new Button(LanguageManager.getInstance().get("export_image"));
-    exportImageButton.setPrefWidth(130);
+    exportImageButton.getStyleClass().add("button-success");
+    exportImageButton.setWrapText(true);
+    exportImageButton.setMaxWidth(Double.MAX_VALUE);
     exportImageButton.setOnAction(e -> exportResults("png"));
+
+    // Make buttons grow equally in the HBox
+    HBox.setHgrow(exportJsonButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportCsvButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportPdfButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportExcelButton, javafx.scene.layout.Priority.ALWAYS);
+    HBox.setHgrow(exportImageButton, javafx.scene.layout.Priority.ALWAYS);
 
     exportBox.getChildren().addAll(exportJsonButton, exportCsvButton, exportPdfButton, exportExcelButton,
         exportImageButton);
 
-    summaryBox.getChildren().addAll(summaryTitleLabel, summaryLabel, new Separator(), exportBox);
+    summaryBox.getChildren().addAll(summaryTitleLabel, summaryLabel, new Separator(), exportLabel, exportBox);
 
     return summaryBox;
   }

@@ -33,24 +33,23 @@ public class StatsController {
 
   private void buildUI() {
     root = new VBox(15);
-    root.setStyle("-fx-padding: 15; -fx-background-color: #f5f5f5;");
+    root.getStyleClass().add("card");
     root.setPrefWidth(800);
     root.setPrefHeight(600);
     root.setMinHeight(600);
 
     // Title
     titleLabel = new Label(LanguageManager.getInstance().get("attendance_statistics"));
-    titleLabel.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-padding: 10;");
+    titleLabel.getStyleClass().add("label-header");
 
     // Stats summary box
     HBox statsBox = new HBox(30);
-    statsBox.setStyle(
-        "-fx-border-color: #d0d0d0; -fx-border-width: 1; -fx-padding: 20; -fx-background-color: white; -fx-border-radius: 5;");
+    statsBox.getStyleClass().add("card");
     statsBox.setAlignment(Pos.CENTER_LEFT);
     statsBox.setPrefHeight(100);
 
     totalStudentsLabel = new Label("Total Students: 0");
-    totalStudentsLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+    totalStudentsLabel.getStyleClass().add("label-title");
 
     presentLabel = new Label("Present: 0");
     presentLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #2ecc71;");
@@ -65,31 +64,28 @@ public class StatsController {
 
     // Empty state message shown when no analysis is available
     emptyStateLabel = new Label(LanguageManager.getInstance().get("no_stats"));
-    emptyStateLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #666666; -fx-padding: 10 0 0 0;");
+    emptyStateLabel.getStyleClass().add("label-secondary");
 
     // Pie chart
     attendanceChart = new PieChart();
     attendanceChart.setTitle(LanguageManager.getInstance().get("chart_title"));
-    attendanceChart.setStyle("-fx-font-size: 14;");
     attendanceChart.setMinHeight(300);
     attendanceChart.setPrefHeight(400);
 
     // Create chart container
     VBox chartContainer = new VBox();
-    chartContainer.setStyle(
-        "-fx-background-color: white; -fx-border-color: #d0d0d0; -fx-border-width: 1; -fx-border-radius: 5; -fx-padding: 15;");
+    chartContainer.getStyleClass().add("card");
     chartContainer.getChildren().add(attendanceChart);
     VBox.setVgrow(attendanceChart, Priority.ALWAYS);
+
+    Label chartLabel = new Label("Chart:");
+    chartLabel.getStyleClass().add("label-title");
 
     root.getChildren().addAll(
         titleLabel,
         statsBox,
         emptyStateLabel,
-        new Label("Chart:") {
-          {
-            setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10 0 0 0;");
-          }
-        },
+        chartLabel,
         chartContainer);
     VBox.setVgrow(chartContainer, Priority.ALWAYS);
   }

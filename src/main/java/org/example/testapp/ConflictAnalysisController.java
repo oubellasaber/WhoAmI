@@ -1,7 +1,11 @@
 package org.example.testapp;
 
 import org.example.testapp.entities.Classroom;
+import org.example.testapp.entities.Student;
+import org.example.testapp.verification.AttendanceConflict;
 import org.example.testapp.verification.ConflictDetector;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -13,49 +17,107 @@ import javafx.scene.layout.VBox;
  */
 public class ConflictAnalysisController {
   private ClassroomController classroomController;
-  private TextArea conflictTextArea;
+  private TableView<AttendanceConflict> conflictTable;
+  private TableView<Student> suspiciousTable;
   private Label summaryLabel;
   private Label titleLabel;
   private Button analyzeButton;
-  private Label detailsLabel;
+  private Label conflictsLabel;
+  private Label suspiciousLabel;
 
   public ConflictAnalysisController(ClassroomController classroomController) {
     this.classroomController = classroomController;
   }
 
   public Node getView() {
-    VBox mainLayout = new VBox(10);
+    VBox mainLayout = new VBox(15);
     mainLayout.setPadding(new Insets(15));
+    mainLayout.getStyleClass().add("card");
 
     // Title
     titleLabel = new Label(LanguageManager.getInstance().get("conflict_title"));
-    titleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+    titleLabel.getStyleClass().add("label-header");
 
     // Analyze button
     analyzeButton = new Button(LanguageManager.getInstance().get("analyze_conflicts"));
-    analyzeButton.setPrefWidth(150);
+    analyzeButton.getStyleClass().add("button-success");
     analyzeButton.setOnAction(e -> analyzeConflicts());
 
     // Summary
     summaryLabel = new Label(LanguageManager.getInstance().get("conflict_prompt"));
-    summaryLabel.setStyle("-fx-font-size: 11;");
     summaryLabel.setWrapText(true);
 
-    // Conflict details text area
-    conflictTextArea = new TextArea();
-    conflictTextArea.setWrapText(true);
-    conflictTextArea.setEditable(false);
-    conflictTextArea.setPrefRowCount(20);
-    conflictTextArea.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11;");
+    // Conflicts Table
+    conflictsLabel = new Label(LanguageManager.getInstance().get("conflict_detailed"));
+    conflictsLabel.getStyleClass().add("label-title");
+    
+    conflictTable = new TableView<>();
+    conflictTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    
+    TableColumn<AttendanceConflict, String> studentCol = new TableColumn<>(
+        LanguageManager.getInstance().get("student_name"));
+    studentCol.setCellValueFactory(cellData -> 
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStudent().getName()));
+    studentCol.setMinWidth(120);
+    
+    TableColumn<AttendanceConflict, String> involvedCol = new TableColumn<>("Involved Student");
+    involvedCol.setCellValueFactory(cellData -> 
+        new javafx.beans.property.SimpleStringProperty(
+            cellData.getValue().getInvolvedStudent() != null ? 
+            cellData.getValue().getInvolvedStudent().getName() : "N/A"));
+    involvedCol.setMinWidth(120);
+    
+    TableColumn<AttendanceConflict, String> typeCol = new TableColumn<>("Conflict Type");
+    typeCol.setCellValueFactory(cellData -> 
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getType().toString()));
+    typeCol.setMinWidth(150);
+    
+    TableColumn<AttendanceConflict, String> descCol = new TableColumn<>("Description");
+    descCol.setCellValueFactory(cellData -> 
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getDescription()));
+    descCol.setMinWidth(250);
+    descCol.setPrefWidth(300);
+    
+    conflictTable.getColumns().addAll(studentCol, involvedCol, typeCol, descCol);
+    conflictTable.setPlaceholder(new Label("No conflicts detected"));
 
-    detailsLabel = new Label(LanguageManager.getInstance().get("conflict_details"));
-    mainLayout.getChildren().addAll(titleLabel, analyzeButton, summaryLabel,
-        detailsLabel, conflictTextArea);
-    VBox.setVgrow(conflictTextArea, javafx.scene.layout.Priority.ALWAYS);
+    // Suspicious Students Table
+    suspiciousLabel = new Label(LanguageManager.getInstance().get("conflict_suspicious"));
+    suspiciousLabel.getStyleClass().add("label-title");
+    
+    suspiciousTable = new TableView<>();
+    suspiciousTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    suspiciousTable.setPrefHeight(200);
+    
+    TableColumn<Student, String> suspNameCol = new TableColumn<>("Student Name");
+    suspNameCol.setCellValueFactory(cellData -> 
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getName()));
+    
+    TableColumn<Student, String> suspIdCol = new TableColumn<>("Student ID");
+    suspIdCol.setCellValueFactory(cellData -> 
+        new javafx.beans.property.SimpleStringProperty(cellData.getValue().getId()));
+    
+    suspiciousTable.getColumns().addAll(suspNameCol, suspIdCol);
+    suspiciousTable.setPlaceholder(new Label("No suspicious students detected"));
+
+    mainLayout.getChildren().addAll(
+        titleLabel, 
+        analyzeButton, 
+        summaryLabel,
+        conflictsLabel,
+        conflictTable,
+        suspiciousLabel,
+        suspiciousTable
+    );
+    
+    VBox.setVgrow(conflictTable, javafx.scene.layout.Priority.ALWAYS);
 
     // Listen for language changes
     LanguageManager.getInstance().addLanguageChangeListener(lang -> updateLanguageTexts());
-    return new ScrollPane(mainLayout);
+    
+    ScrollPane scrollPane = new ScrollPane(mainLayout);
+    scrollPane.setFitToWidth(true);
+    return scrollPane;
   }
 
   private void analyzeConflicts() {
@@ -73,50 +135,26 @@ public class ConflictAnalysisController {
 
       if (allConflicts.isEmpty() && suspiciousStudents.isEmpty()) {
         summaryLabel.setText(LanguageManager.getInstance().get("no_conflicts"));
-        conflictTextArea.setText(LanguageManager.getInstance().get("conflict_truthful_summary",
-            classroom.allPlacements().size()));
+        conflictTable.setItems(FXCollections.observableArrayList());
+        suspiciousTable.setItems(FXCollections.observableArrayList());
       } else {
-        summaryLabel.setText(LanguageManager.getInstance().get("conflict_detected_summary", allConflicts.size()));
+        summaryLabel.setText(LanguageManager.getInstance().get("conflict_detected_summary", allConflicts.size())
+            + " - " + LanguageManager.getInstance().get("conflict_total_students", classroom.allPlacements().size())
+            + (allConflicts.isEmpty() ? "" : " - " + LanguageManager.getInstance().get("conflict_rate",
+                (allConflicts.size() * 100.0 / classroom.allPlacements().size()))));
 
-        StringBuilder details = new StringBuilder();
-        details.append(LanguageManager.getInstance().get("conflict_report_header")).append("\n");
-        details.append(LanguageManager.getInstance().get("conflict_total_conflicts", allConflicts.size())).append("\n");
-        details.append(LanguageManager.getInstance().get("conflict_total_students", classroom.allPlacements().size()))
-            .append("\n");
-        if (!allConflicts.isEmpty()) {
-          details.append(LanguageManager.getInstance().get("conflict_rate",
-              (allConflicts.size() * 100.0 / classroom.allPlacements().size()))).append("\n");
-        }
-        details.append("\n");
+        // Populate conflicts table
+        ObservableList<AttendanceConflict> conflictData = FXCollections.observableArrayList(allConflicts);
+        conflictTable.setItems(conflictData);
 
-        if (!allConflicts.isEmpty()) {
-          details.append(LanguageManager.getInstance().get("conflict_detailed")).append("\n\n");
-          for (var conflict : allConflicts) {
-            details.append(LanguageManager.getInstance().get("conflict_claimer", conflict.getStudent().getName()))
-                .append("\n");
-            details.append(LanguageManager.getInstance().get("conflict_type", conflict.getType())).append("\n");
-            details.append(LanguageManager.getInstance().get("conflict_detail_line", conflict.getDescription()))
-                .append("\n");
-            details.append(LanguageManager.getInstance().get("conflict_separator")).append("\n\n");
-          }
-        }
-
-        if (!suspiciousStudents.isEmpty()) {
-          details.append(LanguageManager.getInstance().get("conflict_suspicious")).append("\n\n");
-          for (var student : suspiciousStudents) {
-            details.append(LanguageManager.getInstance().get("conflict_suspicious_entry",
-                student.getName(), student.getId())).append("\n");
-          }
-          details.append("\n");
-        }
-
-        details.append(LanguageManager.getInstance().get("analysis_complete")).append("\n");
-        conflictTextArea.setText(details.toString());
+        // Populate suspicious students table
+        ObservableList<Student> suspiciousData = FXCollections.observableArrayList(suspiciousStudents);
+        suspiciousTable.setItems(suspiciousData);
       }
     } catch (Exception e) {
       showAlert(Alert.AlertType.ERROR, LanguageManager.getInstance().get("analysis_failed"),
           "Error: " + e.getMessage());
-      conflictTextArea.setText(LanguageManager.getInstance().get("conflict_error", e.getMessage()));
+      e.printStackTrace();
     }
   }
 
@@ -136,10 +174,9 @@ public class ConflictAnalysisController {
       analyzeButton.setText(lm.get("analyze_conflicts"));
     if (summaryLabel != null)
       summaryLabel.setText(lm.get("conflict_prompt"));
-    if (detailsLabel != null)
-      detailsLabel.setText(lm.get("conflict_details"));
-    if (conflictTextArea != null && (conflictTextArea.getText() == null || conflictTextArea.getText().isEmpty())) {
-      conflictTextArea.setText(lm.get("conflict_prompt"));
-    }
+    if (conflictsLabel != null)
+      conflictsLabel.setText(lm.get("conflict_detailed"));
+    if (suspiciousLabel != null)
+      suspiciousLabel.setText(lm.get("conflict_suspicious"));
   }
 }

@@ -1,10 +1,15 @@
 package org.example.testapp;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,10 +33,29 @@ public class SettingsController {
   private Label thresholdsTitleLabel;
   private Button applyButton;
   private Button resetButton;
+  private ProgressBar totalWeightProgress;
+  private Label totalWeightLabel;
 
   public Node getView() {
-    VBox mainLayout = new VBox(15);
+    VBox mainLayout = new VBox(20);
     mainLayout.setPadding(new Insets(20));
+    mainLayout.getStyleClass().add("card");
+
+    // Header Section with Icon
+    HBox headerBox = new HBox(15);
+    headerBox.setAlignment(Pos.CENTER_LEFT);
+    
+    Circle iconCircle = new Circle(25);
+    iconCircle.setFill(Color.web("#3498DB"));
+    Label iconLabel = new Label("⚙");
+    iconLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white;");
+    iconLabel.setTranslateX(-25);
+    iconLabel.setTranslateY(-25);
+    
+    configTitleLabel = new Label(LanguageManager.getInstance().get("configuration_settings"));
+    configTitleLabel.getStyleClass().add("label-header");
+    
+    headerBox.getChildren().addAll(iconCircle, iconLabel, configTitleLabel);
 
     // Strategy Weights Section
     VBox weightsSection = createWeightsSection();
@@ -43,159 +67,256 @@ public class SettingsController {
     HBox buttonBox = createButtonBox();
 
     mainLayout.getChildren().addAll(
-        (configTitleLabel = new Label(LanguageManager.getInstance().get("configuration_settings"))),
+        headerBox,
         weightsSection,
-        new Separator(),
         thresholdsSection,
-        new Separator(),
         buttonBox);
-
-    Label titleLabel = (Label) mainLayout.getChildren().get(0);
-    titleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
 
     loadSettings();
 
     // Listen for language changes
     LanguageManager.getInstance().addLanguageChangeListener(lang -> updateLanguageTexts());
-    return new ScrollPane(mainLayout);
+    
+    ScrollPane scrollPane = new ScrollPane(mainLayout);
+    scrollPane.setFitToWidth(true);
+    return scrollPane;
   }
 
   private VBox createWeightsSection() {
     VBox section = new VBox(15);
-    section.setPadding(new Insets(15));
-    section.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5;");
+    section.setPadding(new Insets(20));
+    section.getStyleClass().addAll("card", "settings-weights-section");
 
+    HBox titleBox = new HBox(10);
+    titleBox.setAlignment(Pos.CENTER_LEFT);
+    
+    Label iconLabel = new Label("⚖");
+    iconLabel.setStyle("-fx-font-size: 20px;");
+    
     weightsTitleLabel = new Label(LanguageManager.getInstance().get("strategy_weights"));
-    weightsTitleLabel.setStyle("-fx-font-size: 13; -fx-font-weight: bold;");
+    weightsTitleLabel.getStyleClass().add("label-title");
+    
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    
+    totalWeightLabel = new Label("Total: 1.00");
+    totalWeightLabel.getStyleClass().add("label-secondary");
+    
+    titleBox.getChildren().addAll(iconLabel, weightsTitleLabel, spacer, totalWeightLabel);
 
+    // Total weight progress bar
+    totalWeightProgress = new ProgressBar(1.0);
+    totalWeightProgress.setPrefWidth(Double.MAX_VALUE);
+    totalWeightProgress.setPrefHeight(8);
+    
     // Neighbor Verification Weight
     VBox neighborBox = createWeightControl(
-        "Neighbor Verification Weight",
+        "🤝 Neighbor Verification Weight",
+        "#3498DB",
         0.4,
-        (value) -> updateWeights());
+        (value) -> updateWeightProgress());
     neighborWeightSlider = (Slider) neighborBox.lookup(".slider");
 
     // Seat Occupancy Weight
     VBox occupancyBox = createWeightControl(
-        "Seat Occupancy Weight",
+        "💺 Seat Occupancy Weight",
+        "#9B59B6",
         0.35,
-        (value) -> updateWeights());
+        (value) -> updateWeightProgress());
     occupancyWeightSlider = (Slider) occupancyBox.lookup(".slider");
 
     // Consensus Score Weight
     VBox consensusBox = createWeightControl(
-        "Consensus Scoring Weight",
+        "🎯 Consensus Scoring Weight",
+        "#E67E22",
         0.25,
-        (value) -> updateWeights());
+        (value) -> updateWeightProgress());
     consensusWeightSlider = (Slider) consensusBox.lookup(".slider");
 
-    section.getChildren().addAll(weightsTitleLabel, neighborBox, occupancyBox, consensusBox);
+    section.getChildren().addAll(titleBox, totalWeightProgress, neighborBox, occupancyBox, consensusBox);
 
     return section;
   }
 
-  private VBox createWeightControl(String label, double initialValue,
+  private VBox createWeightControl(String label, String color, double initialValue,
       javafx.event.EventHandler<javafx.scene.input.MouseEvent> onChange) {
-    VBox box = new VBox(5);
+    VBox box = new VBox(8);
+    box.setPadding(new Insets(10));
+    box.getStyleClass().add("settings-control-box");
 
+    HBox headerBox = new HBox(10);
+    headerBox.setAlignment(Pos.CENTER_LEFT);
+    
     Label nameLabel = new Label(label);
-    nameLabel.setStyle("-fx-font-size: 11;");
+    nameLabel.getStyleClass().add("label-title");
+    nameLabel.setStyle("-fx-font-size: 13px; -fx-font-weight: 500;");
+    
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    
+    Label valueLabel = new Label(String.format("%.0f%%", initialValue * 100));
+    valueLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
+    valueLabel.setPrefWidth(60);
+    valueLabel.setAlignment(Pos.CENTER_RIGHT);
 
-    HBox controlBox = new HBox(10);
+    headerBox.getChildren().addAll(nameLabel, spacer, valueLabel);
+
     Slider slider = new Slider(0, 1, initialValue);
-    slider.setStyle(".slider");
-    slider.setPrefWidth(200);
-    slider.setShowTickLabels(true);
+    slider.getStyleClass().add("slider");
+    slider.setPrefWidth(Double.MAX_VALUE);
     slider.setShowTickMarks(true);
-    slider.setMajorTickUnit(0.1);
-
-    Label valueLabel = new Label(String.format("%.2f", initialValue));
-    valueLabel.setPrefWidth(50);
-    valueLabel.setStyle("-fx-font-size: 11; -fx-text-alignment: center;");
+    slider.setMajorTickUnit(0.2);
+    slider.setMinorTickCount(1);
+    slider.setBlockIncrement(0.05);
 
     slider.valueProperty().addListener((obs, oldVal, newVal) -> {
-      valueLabel.setText(String.format("%.2f", newVal.doubleValue()));
+      valueLabel.setText(String.format("%.0f%%", newVal.doubleValue() * 100));
     });
 
-    controlBox.getChildren().addAll(slider, valueLabel);
+    ProgressBar progressBar = new ProgressBar(initialValue);
+    progressBar.setPrefWidth(Double.MAX_VALUE);
+    progressBar.setPrefHeight(6);
+    progressBar.setStyle("-fx-accent: " + color + ";");
+    
+    slider.valueProperty().addListener((obs, oldVal, newVal) -> {
+      progressBar.setProgress(newVal.doubleValue());
+    });
 
-    box.getChildren().addAll(nameLabel, controlBox);
+    box.getChildren().addAll(headerBox, slider, progressBar);
     return box;
   }
 
   private VBox createThresholdsSection() {
     VBox section = new VBox(15);
-    section.setPadding(new Insets(15));
-    section.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5;");
+    section.setPadding(new Insets(20));
+    section.getStyleClass().addAll("card", "settings-thresholds-section");
 
+    HBox titleBox = new HBox(10);
+    titleBox.setAlignment(Pos.CENTER_LEFT);
+    
+    Label iconLabel = new Label("📊");
+    iconLabel.setStyle("-fx-font-size: 20px;");
+    
     thresholdsTitleLabel = new Label(LanguageManager.getInstance().get("confidence_thresholds"));
-    thresholdsTitleLabel.setStyle("-fx-font-size: 13; -fx-font-weight: bold;");
+    thresholdsTitleLabel.getStyleClass().add("label-title");
+    
+    titleBox.getChildren().addAll(iconLabel, thresholdsTitleLabel);
 
     // Present Threshold
     VBox presentBox = createThresholdControl(
-        "Confidence Threshold for PRESENT Status (≥)",
+        "✅ Confidence Threshold for PRESENT Status (≥)",
+        "#27AE60",
         0.65);
     presentThresholdSlider = (Slider) presentBox.lookup(".slider");
 
     // Absent Threshold
     VBox absentBox = createThresholdControl(
-        "Confidence Threshold for ABSENT Status (≤)",
+        "❌ Confidence Threshold for ABSENT Status (≤)",
+        "#E74C3C",
         0.35);
     absentThresholdSlider = (Slider) absentBox.lookup(".slider");
 
+    // Info box
+    HBox infoBox = new HBox(10);
+    infoBox.setPadding(new Insets(10));
+    infoBox.getStyleClass().add("settings-info-box");
+    
+    Label infoIcon = new Label("ℹ");
+    infoIcon.setStyle("-fx-font-size: 16px;");
+    
     Label infoLabel = new Label("Scores between thresholds are marked as UNCERTAIN");
-    infoLabel.setStyle("-fx-font-size: 10; -fx-text-fill: #666666; -fx-font-style: italic;");
+    infoLabel.setStyle("-fx-font-size: 11px; -fx-font-style: italic;");
+    infoLabel.setWrapText(true);
+    
+    infoBox.getChildren().addAll(infoIcon, infoLabel);
 
-    section.getChildren().addAll(thresholdsTitleLabel, presentBox, absentBox, infoLabel);
+    section.getChildren().addAll(titleBox, presentBox, absentBox, infoBox);
 
     return section;
   }
 
-  private VBox createThresholdControl(String label, double initialValue) {
-    VBox box = new VBox(5);
+  private VBox createThresholdControl(String label, String color, double initialValue) {
+    VBox box = new VBox(8);
+    box.setPadding(new Insets(10));
+    box.getStyleClass().add("settings-control-box");
 
+    HBox headerBox = new HBox(10);
+    headerBox.setAlignment(Pos.CENTER_LEFT);
+    
     Label nameLabel = new Label(label);
-    nameLabel.setStyle("-fx-font-size: 11;");
+    nameLabel.getStyleClass().add("label-title");
+    nameLabel.setStyle("-fx-font-size: 13px; -fx-font-weight: 500;");
+    
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    
+    Label valueLabel = new Label(String.format("%.0f%%", initialValue * 100));
+    valueLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
+    valueLabel.setPrefWidth(60);
+    valueLabel.setAlignment(Pos.CENTER_RIGHT);
 
-    HBox controlBox = new HBox(10);
+    headerBox.getChildren().addAll(nameLabel, spacer, valueLabel);
+
     Slider slider = new Slider(0, 1, initialValue);
-    slider.setStyle(".slider");
-    slider.setPrefWidth(200);
-    slider.setShowTickLabels(true);
+    slider.getStyleClass().add("slider");
+    slider.setPrefWidth(Double.MAX_VALUE);
     slider.setShowTickMarks(true);
-    slider.setMajorTickUnit(0.1);
-
-    Label valueLabel = new Label(String.format("%.2f", initialValue));
-    valueLabel.setPrefWidth(50);
-    valueLabel.setStyle("-fx-font-size: 11; -fx-text-alignment: center;");
+    slider.setMajorTickUnit(0.2);
+    slider.setMinorTickCount(1);
+    slider.setBlockIncrement(0.05);
 
     slider.valueProperty().addListener((obs, oldVal, newVal) -> {
-      valueLabel.setText(String.format("%.2f", newVal.doubleValue()));
+      valueLabel.setText(String.format("%.0f%%", newVal.doubleValue() * 100));
     });
 
-    controlBox.getChildren().addAll(slider, valueLabel);
+    ProgressBar progressBar = new ProgressBar(initialValue);
+    progressBar.setPrefWidth(Double.MAX_VALUE);
+    progressBar.setPrefHeight(6);
+    progressBar.setStyle("-fx-accent: " + color + ";");
+    
+    slider.valueProperty().addListener((obs, oldVal, newVal) -> {
+      progressBar.setProgress(newVal.doubleValue());
+    });
 
-    box.getChildren().addAll(nameLabel, controlBox);
+    box.getChildren().addAll(headerBox, slider, progressBar);
     return box;
   }
 
   private HBox createButtonBox() {
-    HBox box = new HBox(10);
+    HBox box = new HBox(15);
     box.setPadding(new Insets(10));
+    box.setAlignment(Pos.CENTER);
 
     applyButton = new Button(LanguageManager.getInstance().get("apply_settings"));
-    applyButton.setPrefWidth(120);
-    applyButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    applyButton.getStyleClass().add("button-success");
+    applyButton.setPrefWidth(150);
     applyButton.setOnAction(e -> applySettings());
 
     resetButton = new Button(LanguageManager.getInstance().get("reset_defaults"));
-    resetButton.setPrefWidth(120);
-    resetButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    resetButton.getStyleClass().add("button-secondary");
+    resetButton.setPrefWidth(150);
     resetButton.setOnAction(e -> resetToDefaults());
 
     box.getChildren().addAll(applyButton, resetButton);
 
     return box;
+  }
+
+  private void updateWeightProgress() {
+    double total = neighborWeightSlider.getValue() + 
+                   occupancyWeightSlider.getValue() + 
+                   consensusWeightSlider.getValue();
+    totalWeightProgress.setProgress(total);
+    totalWeightLabel.setText(String.format("Total: %.2f", total));
+    
+    // Change color based on total
+    if (Math.abs(total - 1.0) < 0.01) {
+      totalWeightProgress.setStyle("-fx-accent: #27AE60;"); // Green for perfect
+    } else if (total > 0) {
+      totalWeightProgress.setStyle("-fx-accent: #F39C12;"); // Orange for non-zero
+    } else {
+      totalWeightProgress.setStyle("-fx-accent: #E74C3C;"); // Red for zero
+    }
   }
 
   private void updateWeights() {

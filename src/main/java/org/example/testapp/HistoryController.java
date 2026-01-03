@@ -1,5 +1,8 @@
 package org.example.testapp;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -22,97 +25,94 @@ import java.util.Optional;
  * Stores and displays timestamped records of past analyses.
  */
 public class HistoryController {
-  private ListView<String> historyListView;
-  private TextArea detailsArea;
+  private TableView<AnalysisRecord> historyTable;
   private final File historyFile = new File(System.getProperty("user.home"), ".whoami/analysis_history.txt");
-  private final List<AnalysisRecord> records = new ArrayList<>();
+  private final ObservableList<AnalysisRecord> records = FXCollections.observableArrayList();
   private Label titleLabel;
-  private Label detailsLabel;
-  private Label pastAnalysesLabel;
   private Button clearButton;
   private Button refreshButton;
 
   public Node getView() {
-    VBox mainLayout = new VBox(10);
+    VBox mainLayout = new VBox(15);
     mainLayout.setPadding(new Insets(15));
+    mainLayout.getStyleClass().add("card");
 
     titleLabel = new Label(LanguageManager.getInstance().get("analysis_history"));
-    titleLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+    titleLabel.getStyleClass().add("label-header");
 
     HBox controlBox = new HBox(10);
-    clearButton = new Button(LanguageManager.getInstance().get("clear_history"));
-    clearButton.setPrefWidth(120);
-    clearButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
-    clearButton.setOnAction(e -> clearHistory());
-
+    
     refreshButton = new Button(LanguageManager.getInstance().get("refresh"));
-    refreshButton.setPrefWidth(100);
-    refreshButton.setStyle("-fx-font-size: 11; -fx-padding: 8;");
+    refreshButton.getStyleClass().add("button-success");
     refreshButton.setOnAction(e -> loadHistory());
+
+    clearButton = new Button(LanguageManager.getInstance().get("clear_history"));
+    clearButton.getStyleClass().add("button-danger");
+    clearButton.setOnAction(e -> clearHistory());
 
     controlBox.getChildren().addAll(refreshButton, clearButton);
 
-    // History list
-    historyListView = new ListView<>();
-    historyListView.setPrefHeight(300);
-    historyListView.setOnMouseClicked(e -> {
-      if (historyListView.getSelectionModel().getSelectedItem() != null) {
-        showDetails();
-      }
+    // History table
+    historyTable = new TableView<>();
+    historyTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    historyTable.setItems(records);
+
+    TableColumn<AnalysisRecord, String> timestampCol = new TableColumn<>("Date & Time");
+    timestampCol.setCellValueFactory(cellData ->
+        new SimpleStringProperty(cellData.getValue().getTimestamp()));
+    timestampCol.setMinWidth(150);
+    timestampCol.setPrefWidth(180);
+
+    TableColumn<AnalysisRecord, String> detailsCol = new TableColumn<>("Analysis Summary");
+    detailsCol.setCellValueFactory(cellData ->
+        new SimpleStringProperty(cellData.getValue().getDetails()));
+    detailsCol.setMinWidth(300);
+    
+    // Enable text wrapping in details column
+    detailsCol.setCellFactory(tc -> {
+      TableCell<AnalysisRecord, String> cell = new TableCell<>();
+      Label label = new Label();
+      label.setWrapText(true);
+      label.setMaxWidth(Double.MAX_VALUE);
+      cell.setGraphic(label);
+      cell.setPrefHeight(Control.USE_COMPUTED_SIZE);
+      label.textProperty().bind(cell.itemProperty());
+      return cell;
     });
 
-    detailsLabel = new Label(LanguageManager.getInstance().get("details"));
-    detailsLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+    historyTable.getColumns().addAll(timestampCol, detailsCol);
+    historyTable.setPlaceholder(new Label("No analysis history available"));
 
-    detailsArea = new TextArea();
-    detailsArea.setPrefHeight(200);
-    detailsArea.setWrapText(true);
-    detailsArea.setEditable(false);
-
-    mainLayout.getChildren().addAll(
-        titleLabel,
-        controlBox,
-        (pastAnalysesLabel = new Label(LanguageManager.getInstance().get("past_analyses"))),
-        historyListView,
-        detailsLabel,
-        detailsArea);
-
-    VBox.setVgrow(historyListView, Priority.ALWAYS);
-    VBox.setVgrow(detailsArea, Priority.SOMETIMES);
+    mainLayout.getChildren().addAll(titleLabel, controlBox, historyTable);
+    VBox.setVgrow(historyTable, Priority.ALWAYS);
 
     loadHistory();
 
     // Listen for language changes
     LanguageManager.getInstance().addLanguageChangeListener(lang -> updateLanguageTexts());
-    return new ScrollPane(mainLayout);
+    
+    ScrollPane scrollPane = new ScrollPane(mainLayout);
+    scrollPane.setFitToWidth(true);
+    return scrollPane;
   }
 
   private void loadHistory() {
     records.clear();
-    historyListView.getItems().clear();
 
     try {
       if (historyFile.exists()) {
         List<String> lines = Files.readAllLines(historyFile.toPath());
         for (String line : lines) {
           if (line.startsWith("ANALYSIS|")) {
-            String[] parts = line.substring(9).split("\\|");
+            String[] parts = line.substring(9).split("\\|", 2);
             if (parts.length >= 2) {
               AnalysisRecord record = new AnalysisRecord(parts[0], parts[1]);
               records.add(record);
-              historyListView.getItems().add(parts[0] + " — " + parts[1]);
             }
           }
         }
       }
     } catch (IOException ignored) {
-    }
-  }
-
-  private void showDetails() {
-    int idx = historyListView.getSelectionModel().getSelectedIndex();
-    if (idx >= 0 && idx < records.size()) {
-      detailsArea.setText(records.get(idx).details);
     }
   }
 
@@ -126,8 +126,6 @@ public class HistoryController {
       try {
         historyFile.delete();
         records.clear();
-        historyListView.getItems().clear();
-        detailsArea.clear();
       } catch (Exception e) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(LanguageManager.getInstance().get("error"));
@@ -152,12 +150,20 @@ public class HistoryController {
   }
 
   private static class AnalysisRecord {
-    String timestamp;
-    String details;
+    private final String timestamp;
+    private final String details;
 
     AnalysisRecord(String ts, String det) {
       this.timestamp = ts;
       this.details = det;
+    }
+
+    public String getTimestamp() {
+      return timestamp;
+    }
+
+    public String getDetails() {
+      return details;
     }
   }
 
@@ -165,10 +171,6 @@ public class HistoryController {
     LanguageManager lm = LanguageManager.getInstance();
     if (titleLabel != null)
       titleLabel.setText(lm.get("analysis_history"));
-    if (detailsLabel != null)
-      detailsLabel.setText(lm.get("details"));
-    if (pastAnalysesLabel != null)
-      pastAnalysesLabel.setText(lm.get("past_analyses"));
     if (clearButton != null)
       clearButton.setText(lm.get("clear_history"));
     if (refreshButton != null)
